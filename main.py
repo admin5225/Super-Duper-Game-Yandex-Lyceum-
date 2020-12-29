@@ -35,7 +35,6 @@ def is_intersection(obj, group):
     return intersection
 
 
-
 all_sprites = pygame.sprite.Group()
 plates = pygame.sprite.Group()
 groupDED = pygame.sprite.Group()
@@ -44,7 +43,7 @@ perses = pygame.sprite.Group()
 # Картинка с платформой
 plate_image = load_image('plate1.png')
 # Картинки с персонажем
-#pers_images = [load_image('dop_pers1.png'), load_image('dop_pers2.png')]
+# pers_images = [load_image('dop_pers1.png'), load_image('dop_pers2.png')]
 
 images = list()
 for i in range(1, 35):
@@ -80,7 +79,6 @@ class Pers(pygame.sprite.Sprite):
             self.image = pers_images[self.count_image // 10]
 
 
-
 class DedMoroz(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__(all_sprites)
@@ -99,7 +97,7 @@ class DedMoroz(pygame.sprite.Sprite):
 
         self.jump = False
         # Начальная скорость прыжка
-        self.speed_jump = 15
+        self.speed_jump = 18
         self.jump_count = self.speed_jump
         self.step = 5
 
@@ -141,7 +139,6 @@ class DedMoroz(pygame.sprite.Sprite):
         else:
             self.speed_fall = 0
 
-
     def move_next(self):
         self.rect.x = 0
         self.rect.y = 430
@@ -156,19 +153,14 @@ if __name__ == '__main__':
 
     ded = DedMoroz(10, 410)
 
-
-
-
     # Растягивание картинки платформы до нужной длины и её создание
     image = pygame.transform.scale(plate_image, (1000, 35))
     Plate(0, 560, image)
     image = pygame.transform.scale(plate_image, (200, 35))
-    Plate(500, 450, image)
-    Plate(550, 400, image)
-    #Pers(560, 290)
-
-
-
+    Plate(500, 400, image)
+    Plate(600, 220, image)
+    Plate(700, 80, image)
+    # Pers(560, 290)
 
     clock = pygame.time.Clock()
 
@@ -200,13 +192,15 @@ if __name__ == '__main__':
         if ded.rect.x > 950:
             ded.move_next()
             count = (count + 1) % (len(fons) + 1)
+            ded.rect.y = 410
             ded.jump = False
         if ded.rect.x < -30:
             ded.move_back()
             count = (count - 1) % (len(fons) + 1)
+            ded.rect.y = 410
             ded.jump = False
 
-        if not (ded.jump):
+        if not ded.jump:
             if keys[pygame.K_UP]:
                 ded.get_jump()
 
