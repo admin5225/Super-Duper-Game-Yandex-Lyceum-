@@ -1,5 +1,6 @@
 import pygame
 import random
+import sys
 
 pygame.init()
 screen_color = (0, 255, 204)
@@ -13,6 +14,7 @@ screen.fill(screen_color)
 pygame.display.flip()
 pygame.display.set_caption('Змейка')
 x1, y1 = random.randint(0, count_blocks), random.randint(0, count_blocks)
+clock = pygame.time.Clock()
 
 
 class Snake:
@@ -20,8 +22,14 @@ class Snake:
         self.x = x
         self.y = y
 
+    def check_crash(self):
+        return 0 <= self.x < count_blocks and 0 <= self.y < count_blocks
 
-snake_blocks = [Snake(x1, y1)]
+
+snake_blocks = [Snake(9, 8), Snake(9, 9), Snake(9, 10)]
+apple = Snake(5, 5)
+dy = 0
+dx = 1
 
 
 def draw_block(color, y, x):
@@ -42,9 +50,32 @@ while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
+            sys.exit()
+        if event.type == pygame.KEYDOWN:
+            if (event.key == pygame.K_UP or event.key == pygame.K_w) and dx != 0:
+                dy = -1
+                dx = 0
+            elif (event.key == pygame.K_DOWN or event.key == pygame.K_s) and dx != 0:
+                dy = 1
+                dx = 0
+            elif (event.key == pygame.K_RIGHT or event.key == pygame.K_d) and dy != 0:
+                dy = 0
+                dx = 1
+            elif (event.key == pygame.K_LEFT or event.key == pygame.K_a) and dy != 0:
+                dy = 0
+                dx = -1
     for y in range(count_blocks):
         for x in range(count_blocks):
             draw_block((255, 255, 255), y, x)
+    snakes_head = snake_blocks[-1]
+    if not snakes_head.check_crash():
+        pygame.quit()
+        sys.exit()
+    draw_snake((255, 0, 0), apple.x, apple.y)
     for block in snake_blocks:
         draw_snake(snake_color, block.x, block.y)
+    new_head = Snake(snakes_head.x + dy, snakes_head.y + dx)
+    snake_blocks.append(new_head)
+    snake_blocks.pop(0)
     pygame.display.flip()
+    clock.tick(2)
