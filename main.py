@@ -34,7 +34,10 @@ otstup = 1
 total = 0
 text = pygame.font.SysFont('Times New Roman', 36)
 
-snake_dialog = [load_image('dialog.png'), load_image('dialog1.png')]
+
+def terminate():
+    pygame.quit()
+    sys.exit()
 
 
 class Snake:
@@ -62,56 +65,35 @@ def draw_snake(color, y, x):
 
 
 def snake():
-    dialog_image_count = 0
-    dialog = True
-    while dialog:
-        screen.blit(snake_dialog[dialog_image_count], (0, 300))
-
-        for event in pygame.event.get():
-            pas = pygame.key.get_pressed()
-            if event.type == pygame.KEYDOWN:
-                if pas[pygame.K_e]:
-                    if (dialog_image_count + 1) == len(snake_dialog):
-                        dialog = False
-                    else:
-                        dialog_image_count += 1
-                elif pas[pygame.K_q]:
-                    dialog = False
-                    break
-        pygame.display.flip()
-
-
     total = 0
     screen.fill(screen_color)
     x1, y1 = random.randint(0, count_blocks), random.randint(0, count_blocks)
-    fps = 5
+    fps = 3
 
     snake_blocks = [Snake(9, 9), Snake(9, 10)]
     apple = Snake(random.randint(0, count_blocks - 1), random.randint(0, count_blocks - 1))
-    dy = 0
-    dx = 1
-    flag = True
+    dy = time_dy = 0
+    dx = time_dx = 1
 
-    while flag:
+    while True:
         screen.fill(screen_color)
         pygame.draw.rect(screen, (190, 190, 190), [10, 20, 160, 560])
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
+                break
             if event.type == pygame.KEYDOWN:
                 if (event.key == pygame.K_UP or event.key == pygame.K_w) and dx != 0:
-                    dy = -1
-                    dx = 0
+                    time_dy = -1
+                    time_dx = 0
                 elif (event.key == pygame.K_DOWN or event.key == pygame.K_s) and dx != 0:
-                    dy = 1
-                    dx = 0
+                    time_dy = 1
+                    time_dx = 0
                 elif (event.key == pygame.K_RIGHT or event.key == pygame.K_d) and dy != 0:
-                    dy = 0
-                    dx = 1
+                    time_dy = 0
+                    time_dx = 1
                 elif (event.key == pygame.K_LEFT or event.key == pygame.K_a) and dy != 0:
-                    dy = 0
-                    dx = -1
+                    time_dy = 0
+                    time_dx = -1
         screen_total = text.render(f'Счет: {total}', 0, (255, 255, 255))
         screen_speed = text.render(f'Турбо: {fps}', 0, (255, 255, 255))
         screen.blit(screen_total, (20, 20))
@@ -121,21 +103,25 @@ def snake():
                 draw_block((255, 255, 255), y, x)
         snakes_head = snake_blocks[-1]
         if not snakes_head.check_crash():
-            flag = False
+            break
         draw_snake((255, 0, 0), apple.x, apple.y)
         if apple == snakes_head:
             total += 1
-            fps = total // 2 + fps
+            fps = total // 2 + 3
             snake_blocks.append(apple)
             apple = Snake(random.randint(0, count_blocks - 1), random.randint(0, count_blocks - 1))
             if apple in snake_blocks:
                 apple = Snake(random.randint(0, count_blocks), random.randint(0, count_blocks))
         for block in snake_blocks:
             draw_snake(snake_color, block.x, block.y)
+        pygame.display.flip()
+        dx, dy = time_dx, time_dy
         new_head = Snake(snakes_head.x + dy, snakes_head.y + dx)
+        if new_head in snake_blocks:
+            break
         snake_blocks.append(new_head)
         snake_blocks.pop(0)
-        pygame.display.flip()
+
         clock.tick(fps)
 
 
