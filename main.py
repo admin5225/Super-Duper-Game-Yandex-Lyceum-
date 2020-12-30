@@ -9,6 +9,22 @@ size = width, height = 1000, 600
 screen = pygame.display.set_mode(size)
 
 
+def load_image(name, colorkey=None):
+    fullname = os.path.join('data', name)
+    if not os.path.isfile(fullname):
+        print(f"Файл с изображением '{fullname}' не найден")
+        sys.exit()
+    image = pygame.image.load(fullname)
+    if colorkey is not None:
+        image = image.convert()
+        if colorkey == -1:
+            colorkey = image.get_at((0, 0))
+        image.set_colorkey(colorkey)
+    else:
+        image = image.convert_alpha()
+    return image
+
+
 # ------------------------------- Змейка -------------------------------------------------------------------------------
 snake_color = (195, 200, 150)
 screen_color = (0, 102, 2)
@@ -17,6 +33,8 @@ size_block = 27
 otstup = 1
 total = 0
 text = pygame.font.SysFont('Times New Roman', 36)
+
+snake_dialog = [load_image('dialog.png'), load_image('dialog1.png')]
 
 
 class Snake:
@@ -44,6 +62,25 @@ def draw_snake(color, y, x):
 
 
 def snake():
+    dialog_image_count = 0
+    dialog = True
+    while dialog:
+        screen.blit(snake_dialog[dialog_image_count], (0, 300))
+
+        for event in pygame.event.get():
+            pas = pygame.key.get_pressed()
+            if event.type == pygame.KEYDOWN:
+                if pas[pygame.K_e]:
+                    if (dialog_image_count + 1) == len(snake_dialog):
+                        dialog = False
+                    else:
+                        dialog_image_count += 1
+                elif pas[pygame.K_q]:
+                    dialog = False
+                    break
+        pygame.display.flip()
+
+
     total = 0
     screen.fill(screen_color)
     x1, y1 = random.randint(0, count_blocks), random.randint(0, count_blocks)
@@ -53,8 +90,9 @@ def snake():
     apple = Snake(random.randint(0, count_blocks - 1), random.randint(0, count_blocks - 1))
     dy = 0
     dx = 1
+    flag = True
 
-    while True:
+    while flag:
         screen.fill(screen_color)
         pygame.draw.rect(screen, (190, 190, 190), [10, 20, 160, 560])
         for event in pygame.event.get():
@@ -83,8 +121,7 @@ def snake():
                 draw_block((255, 255, 255), y, x)
         snakes_head = snake_blocks[-1]
         if not snakes_head.check_crash():
-            pygame.quit()
-            sys.exit()
+            flag = False
         draw_snake((255, 0, 0), apple.x, apple.y)
         if apple == snakes_head:
             total += 1
@@ -105,24 +142,6 @@ def snake():
 # ----------------------------------------------------------------------------------------------------------------------
 
 
-
-
-def load_image(name, colorkey=None):
-    fullname = os.path.join('data', name)
-    if not os.path.isfile(fullname):
-        print(f"Файл с изображением '{fullname}' не найден")
-        sys.exit()
-    image = pygame.image.load(fullname)
-    if colorkey is not None:
-        image = image.convert()
-        if colorkey == -1:
-            colorkey = image.get_at((0, 0))
-        image.set_colorkey(colorkey)
-    else:
-        image = image.convert_alpha()
-    return image
-
-
 # Проверка на пересечение объекта с группой спрайтов (по маске)
 def is_intersection(obj, group):
     intersection_plate = False
@@ -135,27 +154,6 @@ def is_intersection(obj, group):
                 intersection_pers = True
 
     return intersection_plate, intersection_pers
-
-
-# Мини-игра
-def first_game():
-    pygame.init()
-    screen_color = (0, 255, 204)
-    snake_color = (0, 102, 2)
-    size = width, height = 1000, 600
-    count_blocks = 20
-    size_block = 27
-    otstup = 1
-    total = 0
-    text = pygame.font.SysFont('Times New Roman', 36)
-    screen = pygame.display.set_mode(size)
-    screen.fill(screen_color)
-    pygame.display.flip()
-    pygame.display.set_caption('Змейка')
-    x1, y1 = random.randint(0, count_blocks), random.randint(0, count_blocks)
-    clock = pygame.time.Clock()
-    fps = 5
-
 
 
 all_sprites = pygame.sprite.Group()
@@ -342,8 +340,9 @@ if __name__ == '__main__':
                 ded.get_jump()
 
         if is_intersection(ded, perses)[1]:
-            pers = pygame.sprite.spritecollideany(ded, perses)
-            pers.start_game()
+            if keys[pygame.K_e]:
+                pers = pygame.sprite.spritecollideany(ded, perses)
+                pers.start_game()
 
         all_sprites.update()
         all_sprites.draw(screen)
