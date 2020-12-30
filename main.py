@@ -26,13 +26,35 @@ def load_image(name, colorkey=None):
 
 # Проверка на пересечение объекта с группой спрайтов (по маске)
 def is_intersection(obj, group):
-    intersection = False
+    intersection_plate = False
+    intersection_pers = False
     for el in group:
         if pygame.sprite.collide_mask(obj, el):
             if 120 <= (el.rect.y - obj.rect.y) <= 150:
-                intersection = True
+                intersection_plate = True
+            else:
+                intersection_pers = True
 
-    return intersection
+    return intersection_plate, intersection_pers
+
+
+# Мини-игра
+def first_game():
+    game = True
+    f1 = pygame.font.Font(None, 36)
+    text1 = f1.render('press Q to win', True, (180, 0, 0))
+
+    # Игра отрисовывается
+    while game:
+        screen.fill((0, 0, 0))
+        screen.blit(text1, (10, 50))
+        for events in pygame.event.get():
+            check = pygame.key.get_pressed()
+
+            if check[pygame.K_q]:
+                game = False
+
+        pygame.display.flip()
 
 
 all_sprites = pygame.sprite.Group()
@@ -43,7 +65,8 @@ perses = pygame.sprite.Group()
 # Картинка с платформой
 plate_image = load_image('plate1.png')
 # Картинки с персонажем
-# pers_images = [load_image('dop_pers1.png'), load_image('dop_pers2.png')]
+pers_images = [load_image('dop_pers1.png'), load_image('dop_pers2.png')]
+active_pers_images = [load_image('dop_pers_active1.png'), load_image('dop_pers_active2.png')]
 
 images = list()
 for i in range(1, 35):
@@ -62,21 +85,34 @@ class Plate(pygame.sprite.Sprite):
 
 
 class Pers(pygame.sprite.Sprite):
-    def __init__(self, x, y):
+    def __init__(self, x, y, game):
         super().__init__(all_sprites, perses)
 
         self.count_image = 0
-        self.image = pers_images[self.count_image]
+        self.images = pers_images
+        self.image = self.images[self.count_image]
         self.mask = pygame.mask.from_surface(self.image)
+
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
-        self.count_image = 0
+
+        self.game = game
+        # Флаг активности задания
+        self.active = True
 
     def update(self):
         self.count_image = (self.count_image + 1) % 20
         if self.count_image % 10 == 0:
-            self.image = pers_images[self.count_image // 10]
+            self.image = self.images[self.count_image // 10]
+
+    def start_game(self):
+        if self.active:
+            self.game()
+            self.active = False
+            self.count_image = 0
+            self.images = active_pers_images
+
 
 
 class DedMoroz(pygame.sprite.Sprite):
@@ -106,7 +142,7 @@ class DedMoroz(pygame.sprite.Sprite):
 
     def get_jump(self):
         # Проверка на возможность сделать прыжок
-        if is_intersection(self, plates):
+        if is_intersection(self, plates)[0]:
             self.jump = True
             self.jump_count = self.speed_jump
 
@@ -132,7 +168,7 @@ class DedMoroz(pygame.sprite.Sprite):
                 self.speed_fall = 0
 
         # Проверка на соприкосновение с платформами и падение
-        if not is_intersection(self, plates):
+        if not is_intersection(self, plates)[0]:
             if not self.jump:
                 self.rect.y += self.speed_fall
                 self.speed_fall += 1
@@ -160,7 +196,7 @@ if __name__ == '__main__':
     Plate(500, 400, image)
     Plate(600, 220, image)
     Plate(700, 80, image)
-    # Pers(560, 290)
+    Pers(500, 290, first_game)
 
     clock = pygame.time.Clock()
 
@@ -203,6 +239,10 @@ if __name__ == '__main__':
         if not ded.jump:
             if keys[pygame.K_UP]:
                 ded.get_jump()
+
+        if is_intersection(ded, perses)[1]:
+            pers = pygame.sprite.spritecollideany(ded, perses)
+            pers.start_game()
 
         all_sprites.update()
         all_sprites.draw(screen)
