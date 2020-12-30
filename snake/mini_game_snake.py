@@ -22,12 +22,15 @@ class Snake:
         self.x = x
         self.y = y
 
+    def __eq__(self, other):
+        return isinstance(other, Snake) and self.x == other.x and self.y == other.y
+
     def check_crash(self):
         return 0 <= self.x < count_blocks and 0 <= self.y < count_blocks
 
 
 snake_blocks = [Snake(9, 8), Snake(9, 9), Snake(9, 10)]
-apple = Snake(5, 5)
+apple = Snake(random.randint(0, count_blocks), random.randint(0, count_blocks))
 dy = 0
 dx = 1
 
@@ -72,6 +75,10 @@ while True:
         pygame.quit()
         sys.exit()
     draw_snake((255, 0, 0), apple.x, apple.y)
+    if apple == snakes_head:
+        apple = Snake(random.randint(0, count_blocks), random.randint(0, count_blocks))
+        if apple in snake_blocks:
+            apple = Snake(random.randint(0, count_blocks), random.randint(0, count_blocks))
     for block in snake_blocks:
         draw_snake(snake_color, block.x, block.y)
     new_head = Snake(snakes_head.x + dy, snakes_head.y + dx)
