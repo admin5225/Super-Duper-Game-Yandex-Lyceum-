@@ -2,6 +2,7 @@ import pygame
 
 import os
 import sys
+import random
 
 pygame.init()
 size = width, height = 1000, 600
@@ -40,22 +41,23 @@ def is_intersection(obj, group):
 
 # Мини-игра
 def first_game():
-    game = True
-    f1 = pygame.font.Font(None, 36)
-    text1 = f1.render('press Q to win', True, (180, 0, 0))
-    dialog = load_image('dialog1.png')
+    pygame.init()
+    screen_color = (0, 255, 204)
+    snake_color = (0, 102, 2)
+    size = width, height = 1000, 600
+    count_blocks = 20
+    size_block = 27
+    otstup = 1
+    total = 0
+    text = pygame.font.SysFont('Times New Roman', 36)
+    screen = pygame.display.set_mode(size)
+    screen.fill(screen_color)
+    pygame.display.flip()
+    pygame.display.set_caption('Змейка')
+    x1, y1 = random.randint(0, count_blocks), random.randint(0, count_blocks)
+    clock = pygame.time.Clock()
+    fps = 5
 
-    # Игра отрисовывается
-    while game:
-        for events in pygame.event.get():
-            check = pygame.key.get_pressed()
-
-            screen.blit(dialog, (0, 300))
-
-            if check[pygame.K_q]:
-                game = False
-
-        pygame.display.flip()
 
 
 all_sprites = pygame.sprite.Group()
