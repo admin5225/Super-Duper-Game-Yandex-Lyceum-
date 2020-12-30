@@ -9,12 +9,15 @@ size = width, height = 1000, 600
 count_blocks = 20
 size_block = 27
 otstup = 1
+total = 0
+text = pygame.font.SysFont('Times New Roman', 36)
 screen = pygame.display.set_mode(size)
 screen.fill(screen_color)
 pygame.display.flip()
 pygame.display.set_caption('Змейка')
 x1, y1 = random.randint(0, count_blocks), random.randint(0, count_blocks)
 clock = pygame.time.Clock()
+fps = 2
 
 
 class Snake:
@@ -29,8 +32,8 @@ class Snake:
         return 0 <= self.x < count_blocks and 0 <= self.y < count_blocks
 
 
-snake_blocks = [Snake(9, 8), Snake(9, 9), Snake(9, 10)]
-apple = Snake(random.randint(0, count_blocks), random.randint(0, count_blocks))
+snake_blocks = [Snake(9, 9), Snake(9, 10)]
+apple = Snake(random.randint(0, count_blocks - 1), random.randint(0, count_blocks - 1))
 dy = 0
 dx = 1
 
@@ -67,6 +70,10 @@ while True:
             elif (event.key == pygame.K_LEFT or event.key == pygame.K_a) and dy != 0:
                 dy = 0
                 dx = -1
+    screen_total = text.render(f'Счет: {total}', 0, (255, 255, 255))
+    screen_speed = text.render(f'Турбо: {fps}', 0, (255, 255, 255))
+    screen.blit(screen_total, (20, 20))
+    screen.blit(screen_speed, (20, 50))
     for y in range(count_blocks):
         for x in range(count_blocks):
             draw_block((255, 255, 255), y, x)
@@ -76,7 +83,10 @@ while True:
         sys.exit()
     draw_snake((255, 0, 0), apple.x, apple.y)
     if apple == snakes_head:
-        apple = Snake(random.randint(0, count_blocks), random.randint(0, count_blocks))
+        total += 1
+        fps = total // 2 + fps
+        snake_blocks.append(apple)
+        apple = Snake(random.randint(0, count_blocks - 1), random.randint(0, count_blocks - 1))
         if apple in snake_blocks:
             apple = Snake(random.randint(0, count_blocks), random.randint(0, count_blocks))
     for block in snake_blocks:
@@ -85,4 +95,4 @@ while True:
     snake_blocks.append(new_head)
     snake_blocks.pop(0)
     pygame.display.flip()
-    clock.tick(2)
+    clock.tick(fps)
