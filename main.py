@@ -63,8 +63,6 @@ def snake():
         pygame.draw.rect(screen, (190, 190, 190), [10, 20, 160, 560])
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                '''pygame.quit()
-                sys.exit()'''
                 break
             if event.type == pygame.KEYDOWN:
                 if (event.key == pygame.K_UP or event.key == pygame.K_w) and dx != 0:
@@ -88,8 +86,6 @@ def snake():
                 draw_block((255, 255, 255), y, x)
         snakes_head = snake_blocks[-1]
         if not snakes_head.check_crash():
-            '''pygame.quit()
-            sys.exit()'''
             break
         draw_snake((255, 0, 0), apple.x, apple.y)
         if apple == snakes_head:
@@ -105,8 +101,6 @@ def snake():
         dx, dy = time_dx, time_dy
         new_head = Snake(snakes_head.x + dy, snakes_head.y + dx)
         if new_head in snake_blocks:
-            '''pygame.quit()
-            sys.exit()'''
             break
         snake_blocks.append(new_head)
         snake_blocks.pop(0)
