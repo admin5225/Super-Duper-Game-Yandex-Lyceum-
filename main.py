@@ -8,7 +8,6 @@ pygame.init()
 size = width, height = 1000, 600
 screen = pygame.display.set_mode(size)
 
-
 # ------------------------------- Змейка -------------------------------------------------------------------------------
 snake_color = (195, 200, 150)
 screen_color = (0, 102, 2)
@@ -17,6 +16,11 @@ size_block = 27
 otstup = 1
 total = 0
 text = pygame.font.SysFont('Times New Roman', 36)
+
+
+def terminate():
+    pygame.quit()
+    sys.exit()
 
 
 class Snake:
@@ -47,33 +51,34 @@ def snake():
     total = 0
     screen.fill(screen_color)
     x1, y1 = random.randint(0, count_blocks), random.randint(0, count_blocks)
-    fps = 5
+    fps = 3
 
     snake_blocks = [Snake(9, 9), Snake(9, 10)]
     apple = Snake(random.randint(0, count_blocks - 1), random.randint(0, count_blocks - 1))
-    dy = 0
-    dx = 1
+    dy = time_dy = 0
+    dx = time_dx = 1
 
     while True:
         screen.fill(screen_color)
         pygame.draw.rect(screen, (190, 190, 190), [10, 20, 160, 560])
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
+                '''pygame.quit()
+                sys.exit()'''
+                break
             if event.type == pygame.KEYDOWN:
                 if (event.key == pygame.K_UP or event.key == pygame.K_w) and dx != 0:
-                    dy = -1
-                    dx = 0
+                    time_dy = -1
+                    time_dx = 0
                 elif (event.key == pygame.K_DOWN or event.key == pygame.K_s) and dx != 0:
-                    dy = 1
-                    dx = 0
+                    time_dy = 1
+                    time_dx = 0
                 elif (event.key == pygame.K_RIGHT or event.key == pygame.K_d) and dy != 0:
-                    dy = 0
-                    dx = 1
+                    time_dy = 0
+                    time_dx = 1
                 elif (event.key == pygame.K_LEFT or event.key == pygame.K_a) and dy != 0:
-                    dy = 0
-                    dx = -1
+                    time_dy = 0
+                    time_dx = -1
         screen_total = text.render(f'Счет: {total}', 0, (255, 255, 255))
         screen_speed = text.render(f'Турбо: {fps}', 0, (255, 255, 255))
         screen.blit(screen_total, (20, 20))
@@ -83,28 +88,33 @@ def snake():
                 draw_block((255, 255, 255), y, x)
         snakes_head = snake_blocks[-1]
         if not snakes_head.check_crash():
-            pygame.quit()
-            sys.exit()
+            '''pygame.quit()
+            sys.exit()'''
+            break
         draw_snake((255, 0, 0), apple.x, apple.y)
         if apple == snakes_head:
             total += 1
-            fps = total // 2 + fps
+            fps = total // 2 + 3
             snake_blocks.append(apple)
             apple = Snake(random.randint(0, count_blocks - 1), random.randint(0, count_blocks - 1))
             if apple in snake_blocks:
                 apple = Snake(random.randint(0, count_blocks), random.randint(0, count_blocks))
         for block in snake_blocks:
             draw_snake(snake_color, block.x, block.y)
+        pygame.display.flip()
+        dx, dy = time_dx, time_dy
         new_head = Snake(snakes_head.x + dy, snakes_head.y + dx)
+        if new_head in snake_blocks:
+            '''pygame.quit()
+            sys.exit()'''
+            break
         snake_blocks.append(new_head)
         snake_blocks.pop(0)
-        pygame.display.flip()
+
         clock.tick(fps)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-
-
 
 
 def load_image(name, colorkey=None):
@@ -155,7 +165,6 @@ def first_game():
     x1, y1 = random.randint(0, count_blocks), random.randint(0, count_blocks)
     clock = pygame.time.Clock()
     fps = 5
-
 
 
 all_sprites = pygame.sprite.Group()
@@ -213,7 +222,6 @@ class Pers(pygame.sprite.Sprite):
             self.active = False
             self.count_image = 0
             self.images = active_pers_images
-
 
 
 class DedMoroz(pygame.sprite.Sprite):
