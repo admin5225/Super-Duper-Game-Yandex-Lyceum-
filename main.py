@@ -43,13 +43,14 @@ def first_game():
     game = True
     f1 = pygame.font.Font(None, 36)
     text1 = f1.render('press Q to win', True, (180, 0, 0))
+    dialog = load_image('dialog1.png')
 
     # Игра отрисовывается
     while game:
-        screen.fill((0, 0, 0))
-        screen.blit(text1, (10, 50))
         for events in pygame.event.get():
             check = pygame.key.get_pressed()
+
+            screen.blit(dialog, (0, 300))
 
             if check[pygame.K_q]:
                 game = False
