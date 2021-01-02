@@ -4,6 +4,8 @@ import os
 import sys
 import random
 
+from pygame.sprite import Group
+
 pygame.init()
 pygame.display.set_caption('Подвиги Деда Мороза')
 size = width, height = 1000, 600
@@ -209,24 +211,9 @@ def is_intersection(obj, group):
     return intersection_plate, intersection_pers
 
 
-all_sprites = pygame.sprite.Group()
-plates = pygame.sprite.Group()
-groupDED = pygame.sprite.Group()
-perses = pygame.sprite.Group()
-# Картинка с платформой
-plate_image = load_image('plate1.png')
-# Картинки с персонажем
-pers_images = [load_image('dop_pers1.png'), load_image('dop_pers2.png')]
-active_pers_images = [load_image('dop_pers_active1.png'), load_image('dop_pers_active2.png')]
-
-images = list()
-for i in range(1, 35):
-    images.append(load_image(f"ded{i}.png"))
-
-
 class Plate(pygame.sprite.Sprite):
-    def __init__(self, x, y, image):
-        super().__init__(all_sprites, plates)
+    def __init__(self, x, y, image, group):
+        super().__init__(group)
 
         self.image = image
         self.mask = pygame.mask.from_surface(self.image)
@@ -236,8 +223,8 @@ class Plate(pygame.sprite.Sprite):
 
 
 class Pers(pygame.sprite.Sprite):
-    def __init__(self, x, y, dialog_images, win_image, lose_image, game):
-        super().__init__(all_sprites, perses)
+    def __init__(self, x, y, dialog_images, win_image, lose_image, game, group):
+        super().__init__(group)
 
         self.count_image = 0
         self.images = pers_images
@@ -271,10 +258,9 @@ class Pers(pygame.sprite.Sprite):
             self.images = active_pers_images
 
 
-
 class DedMoroz(pygame.sprite.Sprite):
     def __init__(self, x, y):
-        super().__init__(all_sprites)
+        super().__init__(groupDED)
 
         self.moved = 1
 
@@ -286,7 +272,6 @@ class DedMoroz(pygame.sprite.Sprite):
         self.height = 150
         self.rect.x = x
         self.rect.y = y
-        self.add(groupDED)
 
         self.jump = False
         # Начальная скорость прыжка
@@ -299,7 +284,7 @@ class DedMoroz(pygame.sprite.Sprite):
 
     def get_jump(self):
         # Проверка на возможность сделать прыжок
-        if is_intersection(self, plates)[0]:
+        if is_intersection(self, groups_plates[count - 1])[0]:
             self.jump = True
             self.jump_count = self.speed_jump
 
@@ -325,7 +310,7 @@ class DedMoroz(pygame.sprite.Sprite):
                 self.speed_fall = 0
 
         # Проверка на соприкосновение с платформами и падение
-        if not is_intersection(self, plates)[0]:
+        if not is_intersection(self, groups_plates[count - 1])[0]:
             if not self.jump:
                 self.rect.y += self.speed_fall
                 self.speed_fall += 1
@@ -334,30 +319,60 @@ class DedMoroz(pygame.sprite.Sprite):
 
     def move_next(self):
         self.rect.x = 0
-        self.rect.y = 430
 
     def move_back(self):
         self.rect.x = 950
-        self.rect.y = 430
 
 
 if __name__ == '__main__':
     screen.fill((255, 255, 255))
 
+    # Создание групп и объектов
+    perses_level_1 = pygame.sprite.Group()
+    perses_level_2 = pygame.sprite.Group()
+    plates_level_1 = pygame.sprite.Group()
+    plates_level_2 = pygame.sprite.Group()
+    groupDED = pygame.sprite.Group()
+
+    # Картинка с платформой
+    plate1_image = load_image('plate1.png')
+    plate2_image = load_image('plate2.png')
+    # Картинки с персонажем
+    pers_images = [load_image('dop_pers1.png'), load_image('dop_pers2.png')]
+    active_pers_images = [load_image('dop_pers_active1.png'), load_image('dop_pers_active2.png')]
+
+    # Анимация деда АФК
+    images = list()
+    for i in range(1, 35):
+        images.append(load_image(f"ded{i}.png"))
+
     ded = DedMoroz(10, 410)
 
     # Растягивание картинки платформы до нужной длины и её создание
-    image = pygame.transform.scale(plate_image, (1010, 35))
-    Plate(0, 560, image)
-    image = pygame.transform.scale(plate_image, (200, 35))
-    Plate(500, 400, image)
-    Plate(600, 220, image)
-    Plate(700, 80, image)
-    Pers(500, 290, pers1_dialog, pers1_win_image, pers1_lose_image, snake)
+    image = pygame.transform.scale(plate2_image, (1010, 40))
+    Plate(0, 570, image, plates_level_1)
+    Plate(0, 570, image, plates_level_2)
+    image = pygame.transform.scale(plate1_image, (200, 35))
+
+    # Уровень 1
+    Plate(10, 200, image, plates_level_1)
+    Plate(50, 200, image, plates_level_1)
+    Plate(200, 500, image, plates_level_1)
+    Plate(600, 500, image, plates_level_1)
+    Plate(800, 350, image, plates_level_1)
+    Plate(600, 200, image, plates_level_1)
+    Plate(400, 300, image, plates_level_1)
+    Pers(-20, 90, pers1_dialog, pers1_win_image, pers1_lose_image, snake, perses_level_1)
+
+    # Уровень 2
+    Plate(500, 500, image, plates_level_2)
+    Plate(200, 200, image, plates_level_2)
 
     clock = pygame.time.Clock()
 
     fons = [load_image('fon1.jpg'), load_image('fon2.jpg')]
+    groups_perses = [perses_level_1, perses_level_2]
+    groups_plates = [plates_level_1, plates_level_2]
     count = 1
 
     left_move, right_move, move = False, False, False
@@ -385,26 +400,26 @@ if __name__ == '__main__':
         if ded.rect.x > 950:
             ded.move_next()
             count = (count + 1) % (len(fons) + 1)
-            ded.rect.y = 410
-            ded.jump = False
         if ded.rect.x < -30:
             ded.move_back()
             count = (count - 1) % (len(fons) + 1)
-            ded.rect.y = 410
-            ded.jump = False
 
         if not ded.jump:
             if keys[pygame.K_UP] or keys[pygame.K_w]:
                 ded.get_jump()
 
-        if is_intersection(ded, perses)[1]:
+        if is_intersection(ded, groups_perses[count - 1])[1]:
             if keys[pygame.K_e]:
-                pers = pygame.sprite.spritecollideany(ded, perses)
+                pers = pygame.sprite.spritecollideany(ded, groups_perses[count - 1])
                 if pers.active_game:
                     pers.start_game()
 
-        all_sprites.update()
-        all_sprites.draw(screen)
+        groupDED.update()
+        groupDED.draw(screen)
+        groups_perses[count - 1].update()
+        groups_plates[count - 1].update()
+        groups_perses[count - 1].draw(screen)
+        groups_plates[count - 1].draw(screen)
 
         clock.tick(60)
         pygame.display.flip()
