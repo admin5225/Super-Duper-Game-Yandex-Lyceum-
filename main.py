@@ -214,7 +214,6 @@ all_sprites = pygame.sprite.Group()
 plates = pygame.sprite.Group()
 groupDED = pygame.sprite.Group()
 perses = pygame.sprite.Group()
-
 # Картинка с платформой
 plate_image = load_image('plate1.png')
 # Картинки с персонажем
