@@ -126,7 +126,6 @@ def snake():
             break
         snake_blocks.append(new_head)
         snake_blocks.pop(0)
-
         clock.tick(fps)
 
     if total >= 7:
