@@ -5,6 +5,7 @@ import sys
 import random
 
 pygame.init()
+pygame.display.set_caption('Подвиги Деда Мороза')
 size = width, height = 1000, 600
 screen = pygame.display.set_mode(size)
 
@@ -69,13 +70,14 @@ def draw_snake(color, y, x):
 def snake():
     total = 0
     screen.fill(screen_color)
+    pygame.display.set_caption('Мини игра - Змейка')
     x1, y1 = random.randint(0, count_blocks), random.randint(0, count_blocks)
     fps = 5
 
     snake_blocks = [Snake(9, 9), Snake(9, 10)]
     apple = Snake(random.randint(0, count_blocks - 1), random.randint(0, count_blocks - 1))
-    dy = 0
-    dx = 1
+    dy = time_dy = 0
+    dx = time_dx = 1
     flag = True
 
     while flag:
@@ -83,23 +85,22 @@ def snake():
         pygame.draw.rect(screen, (190, 190, 190), [10, 20, 160, 560])
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
+                break
             if event.type == pygame.KEYDOWN:
                 if (event.key == pygame.K_UP or event.key == pygame.K_w) and dx != 0:
-                    dy = -1
-                    dx = 0
+                    time_dy = -1
+                    time_dx = 0
                 elif (event.key == pygame.K_DOWN or event.key == pygame.K_s) and dx != 0:
-                    dy = 1
-                    dx = 0
+                    time_dy = 1
+                    time_dx = 0
                 elif (event.key == pygame.K_RIGHT or event.key == pygame.K_d) and dy != 0:
-                    dy = 0
-                    dx = 1
+                    time_dy = 0
+                    time_dx = 1
                 elif (event.key == pygame.K_LEFT or event.key == pygame.K_a) and dy != 0:
-                    dy = 0
-                    dx = -1
+                    time_dy = 0
+                    time_dx = -1
         screen_total = text.render(f'Счет: {total}', 0, (255, 255, 255))
-        screen_speed = text.render(f'Турбо: {fps}', 0, (255, 255, 255))
+        screen_speed = text.render(f'Турбо: {fps - 4}', 0, (255, 255, 255))
         screen.blit(screen_total, (20, 20))
         screen.blit(screen_speed, (20, 50))
         for y in range(count_blocks):
@@ -107,22 +108,25 @@ def snake():
                 draw_block((255, 255, 255), y, x)
         snakes_head = snake_blocks[-1]
         if not snakes_head.check_crash():
-            flag = False
+            break
         draw_snake((255, 0, 0), apple.x, apple.y)
         if apple == snakes_head:
             total += 1
-            fps = total // 2 + fps
+            fps = total // 1 + 5
             snake_blocks.append(apple)
             apple = Snake(random.randint(0, count_blocks - 1), random.randint(0, count_blocks - 1))
             if apple in snake_blocks:
                 apple = Snake(random.randint(0, count_blocks), random.randint(0, count_blocks))
         for block in snake_blocks:
             draw_snake(snake_color, block.x, block.y)
+        pygame.display.flip()
+        dx, dy = time_dx, time_dy
         new_head = Snake(snakes_head.x + dy, snakes_head.y + dx)
+        if new_head in snake_blocks:
+            break
         snake_blocks.append(new_head)
         snake_blocks.pop(0)
 
-        pygame.display.flip()
         clock.tick(fps)
 
     if total >= 7:
@@ -146,6 +150,7 @@ def one_image(image):
                 if pas[pygame.K_q]:
                     key = 'Q'
                     flag = False
+
         pygame.display.flip()
     return key
 
@@ -186,7 +191,7 @@ def interaction(pers, game, dialog_images, win_image, lose_image):
                 key = one_image(lose_image)
                 if key == 'Q':
                     exit = True
-
+                    pygame.display.set_caption('Подвиги Деда Мороза')
             if exit:
                 return is_win
 
@@ -344,7 +349,7 @@ if __name__ == '__main__':
     ded = DedMoroz(10, 410)
 
     # Растягивание картинки платформы до нужной длины и её создание
-    image = pygame.transform.scale(plate_image, (1000, 35))
+    image = pygame.transform.scale(plate_image, (1010, 35))
     Plate(0, 560, image)
     image = pygame.transform.scale(plate_image, (200, 35))
     Plate(500, 400, image)
@@ -391,7 +396,7 @@ if __name__ == '__main__':
             ded.jump = False
 
         if not ded.jump:
-            if keys[pygame.K_UP]:
+            if keys[pygame.K_UP] or keys[pygame.K_w]:
                 ded.get_jump()
 
         if is_intersection(ded, perses)[1]:
