@@ -4,7 +4,6 @@ import os
 import sys
 import random
 
-from pygame.sprite import Group
 
 pygame.init()
 pygame.display.set_caption('Подвиги Деда Мороза')
@@ -137,6 +136,50 @@ def snake():
 # ----------------------------------------------------------------------------------------------------------------------
 
 
+# ----------------------------------------- Подарки---------------------------------------------------------------------
+
+gift_image = pygame.transform.scale(load_image(os.path.join('gifts', 'gift2.png')), (50, 50))
+
+
+# Указываются координаты и группа уровня
+class Gift(pygame.sprite.Sprite):
+    def __init__(self, x, y, group):
+        super().__init__(group, all_sprites)
+
+        self.image = gift_image
+        self.rect = self.image.get_rect()
+        self.mask = pygame.mask.from_surface(self.image)
+        self.rect.x = x
+        self.rect.y = y
+
+        self.direction_move = -1
+        self.move_count = 0
+        self.delete = False
+
+
+    def update(self):
+        if self.delete:
+            if self.move_count == 20:
+                self.kill()
+            else:
+                self.rect.y -= 2
+                self.move_count += 1
+        else:
+            if self.move_count == 40:
+                self.direction_move = -self.direction_move
+                self.move_count = 0
+            if self.move_count % 2 == 0:
+                self.rect.y += self.direction_move
+            self.move_count += 1
+
+    def destroy(self):
+        self.delete = True
+        self.move_count = 0
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+
+
 def one_image(image):
     flag = True
     while flag:
@@ -213,7 +256,7 @@ def is_intersection(obj, group):
 
 class Plate(pygame.sprite.Sprite):
     def __init__(self, x, y, image, group):
-        super().__init__(group)
+        super().__init__(group, all_sprites)
 
         self.image = image
         self.mask = pygame.mask.from_surface(self.image)
@@ -224,7 +267,7 @@ class Plate(pygame.sprite.Sprite):
 
 class Pers(pygame.sprite.Sprite):
     def __init__(self, x, y, dialog_images, win_image, lose_image, game, group):
-        super().__init__(group)
+        super().__init__(group, all_sprites)
 
         self.count_image = 0
         self.images = pers_images
@@ -260,13 +303,14 @@ class Pers(pygame.sprite.Sprite):
 
 class DedMoroz(pygame.sprite.Sprite):
     def __init__(self, x, y):
-        super().__init__(groupDED)
+        super().__init__(groupDED, all_sprites)
 
-        self.moved = 1
+        self.count_image_AFK = 1
 
-        self.image = images[self.moved - 1]
+        self.image = images_ded_AFK[self.count_image_AFK - 1]
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
+        self.collect_gifts = True
 
         self.width = 150
         self.height = 150
@@ -284,16 +328,16 @@ class DedMoroz(pygame.sprite.Sprite):
 
     def get_jump(self):
         # Проверка на возможность сделать прыжок
-        if is_intersection(self, groups_plates[count - 1])[0]:
+        if is_intersection(self, groups_plates[level_count - 1])[0]:
             self.jump = True
             self.jump_count = self.speed_jump
 
     def update(self):
         # Смена картинки
-        if self.moved % 10 == 0:
-            self.image = images[(self.moved - 1) // 10]
+        if self.count_image_AFK % 10 == 0:
+            self.image = images_ded_AFK[(self.count_image_AFK // 10) - 1]
             self.mask = pygame.mask.from_surface(self.image)
-        self.moved = (self.moved + 1) % 331
+        self.count_image_AFK = (self.count_image_AFK + 1) % (len(images_ded_AFK) * 10)
 
         # Проверка на пересечение с платформами и движение (влево, впараво)
         if left_move:
@@ -310,7 +354,7 @@ class DedMoroz(pygame.sprite.Sprite):
                 self.speed_fall = 0
 
         # Проверка на соприкосновение с платформами и падение
-        if not is_intersection(self, groups_plates[count - 1])[0]:
+        if not is_intersection(self, groups_plates[level_count - 1])[0]:
             if not self.jump:
                 self.rect.y += self.speed_fall
                 self.speed_fall += 1
@@ -328,10 +372,13 @@ if __name__ == '__main__':
     screen.fill((255, 255, 255))
 
     # Создание групп и объектов
+    all_sprites = pygame.sprite.Group()
     perses_level_1 = pygame.sprite.Group()
     perses_level_2 = pygame.sprite.Group()
     plates_level_1 = pygame.sprite.Group()
     plates_level_2 = pygame.sprite.Group()
+    gifts_level_1 = pygame.sprite.Group()
+    gifts_level_2 = pygame.sprite.Group()
     groupDED = pygame.sprite.Group()
 
     # Картинка с платформой
@@ -342,9 +389,9 @@ if __name__ == '__main__':
     active_pers_images = [load_image('dop_pers_active1.png'), load_image('dop_pers_active2.png')]
 
     # Анимация деда АФК
-    images = list()
+    images_ded_AFK = list()
     for i in range(1, 35):
-        images.append(load_image(f"ded{i}.png"))
+        images_ded_AFK.append(load_image(f"ded{i}.png"))
 
     ded = DedMoroz(10, 410)
 
@@ -363,6 +410,9 @@ if __name__ == '__main__':
     Plate(600, 200, image, plates_level_1)
     Plate(400, 300, image, plates_level_1)
     Pers(-20, 90, pers1_dialog, pers1_win_image, pers1_lose_image, snake, perses_level_1)
+    Gift(280, 450, gifts_level_1)
+    Gift(680, 450, gifts_level_1)
+    Gift(750, 450, gifts_level_1)
 
     # Уровень 2
     Plate(500, 500, image, plates_level_2)
@@ -370,16 +420,33 @@ if __name__ == '__main__':
 
     clock = pygame.time.Clock()
 
-    fons = [load_image('fon1.jpg'), load_image('fon2.jpg')]
+    # Фоны
+    fon_level_1 = []
+    for i in range(52):
+        image = load_image(os.path.join('background', os.path.join('level1', f'fon{i + 1}.png')))
+        fon_level_1.append(pygame.transform.scale(image, (1000, 600)))
+    fon_level_2 = []
+    for i in range(50):
+        image = load_image(os.path.join('background', os.path.join('level2', f'fon{i + 1}.png')))
+        fon_level_2.append(pygame.transform.scale(image, (1000, 600)))
+
+    # Группы для смены локаций
     groups_perses = [perses_level_1, perses_level_2]
     groups_plates = [plates_level_1, plates_level_2]
-    count = 1
+    groups_gifts = [gifts_level_1, gifts_level_2]
+    fons = [fon_level_1, fon_level_2]
+    fon_count = 1
+    level_count = 1
+    fon_image = fons[level_count - 1][fon_count - 1]
 
     left_move, right_move, move = False, False, False
 
     running = True
     while running:
-        screen.blit(fons[count - 1], (0, 0))
+        screen.blit(fon_image, (0, 0))
+        if fon_count % 10 == 0:
+            fon_image = fons[level_count - 1][(fon_count // 10) - 1]
+        fon_count = (fon_count + 1) % (len(fons[level_count - 1]) * 10)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -387,6 +454,7 @@ if __name__ == '__main__':
 
         keys = pygame.key.get_pressed()
 
+        # Передвижение деда
         if keys[pygame.K_LEFT] or keys[pygame.K_a]:
             left_move = True
             right_move = False
@@ -397,29 +465,41 @@ if __name__ == '__main__':
             left_move = False
             right_move = False
 
+        # Переход на соседние карты
         if ded.rect.x > 950:
             ded.move_next()
-            count = (count + 1) % (len(fons) + 1)
+            level_count = (level_count + 1) % (len(fons) + 1)
+            fon_count = 10
         if ded.rect.x < -30:
             ded.move_back()
-            count = (count - 1) % (len(fons) + 1)
+            level_count = (level_count - 1) % (len(fons) + 1)
+            fon_count = 10
 
+        # Прыжок
         if not ded.jump:
             if keys[pygame.K_UP] or keys[pygame.K_w]:
                 ded.get_jump()
 
-        if is_intersection(ded, groups_perses[count - 1])[1]:
+        # Взаимодействие с персонажами
+        if is_intersection(ded, groups_perses[level_count - 1])[1]:
             if keys[pygame.K_e]:
-                pers = pygame.sprite.spritecollideany(ded, groups_perses[count - 1])
+                pers = pygame.sprite.spritecollideany(ded, groups_perses[level_count - 1])
                 if pers.active_game:
                     pers.start_game()
 
-        groupDED.update()
+        # Собирание подарков (одно из заданий)
+        if ded.collect_gifts:
+            if is_intersection(ded, groups_gifts[level_count - 1])[1]:
+                gift = pygame.sprite.spritecollideany(ded, groups_gifts[level_count - 1])
+                if not gift.delete:
+                    gift.destroy()
+
+        all_sprites.update()
         groupDED.draw(screen)
-        groups_perses[count - 1].update()
-        groups_plates[count - 1].update()
-        groups_perses[count - 1].draw(screen)
-        groups_plates[count - 1].draw(screen)
+        groups_perses[level_count - 1].draw(screen)
+        groups_plates[level_count - 1].draw(screen)
+        groups_gifts[level_count - 1].draw(screen)
+
 
         clock.tick(60)
         pygame.display.flip()
