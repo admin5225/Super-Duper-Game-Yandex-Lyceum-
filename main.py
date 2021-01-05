@@ -139,6 +139,7 @@ def snake():
 # ----------------------------------------- Подарки---------------------------------------------------------------------
 
 gift_image = pygame.transform.scale(load_image(os.path.join('gifts', 'gift2.png')), (50, 50))
+number_image = pygame.transform.scale(load_image(os.path.join('gifts', 'number.png')), (50, 30))
 
 
 # Указываются координаты и группа уровня
@@ -164,6 +165,7 @@ class Gift(pygame.sprite.Sprite):
             else:
                 self.rect.y -= 2
                 self.move_count += 1
+                screen.blit(number_image, (self.rect.x - 50, self.rect.y + 10))
         else:
             if self.move_count == 40:
                 self.direction_move = -self.direction_move
@@ -244,6 +246,7 @@ def interaction(pers, game, dialog_images, win_image, lose_image):
 def is_intersection(obj, group):
     intersection_plate = False
     intersection_pers = False
+
     for el in group:
         if pygame.sprite.collide_mask(obj, el):
             if 120 <= (el.rect.y - obj.rect.y) <= 150:
@@ -371,6 +374,10 @@ class DedMoroz(pygame.sprite.Sprite):
 if __name__ == '__main__':
     screen.fill((255, 255, 255))
 
+    # Звуки
+    get_gift = pygame.mixer.Sound(os.path.join('data', 'get_gift.mp3'))
+
+
     # Создание групп и объектов
     all_sprites = pygame.sprite.Group()
     perses_level_1 = pygame.sprite.Group()
@@ -422,11 +429,11 @@ if __name__ == '__main__':
 
     # Фоны
     fon_level_1 = []
-    for i in range(52):
+    for i in range(150):
         image = load_image(os.path.join('background', os.path.join('level1', f'fon{i + 1}.png')))
         fon_level_1.append(pygame.transform.scale(image, (1000, 600)))
     fon_level_2 = []
-    for i in range(50):
+    for i in range(52):
         image = load_image(os.path.join('background', os.path.join('level2', f'fon{i + 1}.png')))
         fon_level_2.append(pygame.transform.scale(image, (1000, 600)))
 
@@ -444,9 +451,9 @@ if __name__ == '__main__':
     running = True
     while running:
         screen.blit(fon_image, (0, 0))
-        if fon_count % 10 == 0:
-            fon_image = fons[level_count - 1][(fon_count // 10) - 1]
-        fon_count = (fon_count + 1) % (len(fons[level_count - 1]) * 10)
+        if fon_count % 5 == 0:
+            fon_image = fons[level_count - 1][(fon_count // 5) - 1]
+        fon_count = (fon_count + 1) % (len(fons[level_count - 1]) * 5)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -492,6 +499,7 @@ if __name__ == '__main__':
             if is_intersection(ded, groups_gifts[level_count - 1])[1]:
                 gift = pygame.sprite.spritecollideany(ded, groups_gifts[level_count - 1])
                 if not gift.delete:
+                    get_gift.play()
                     gift.destroy()
 
         all_sprites.update()
