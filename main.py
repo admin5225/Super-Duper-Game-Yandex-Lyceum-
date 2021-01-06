@@ -42,7 +42,7 @@ pers1_dialog = [load_image(os.path.join('pers1', '1.png')), load_image(os.path.j
                 load_image(os.path.join('pers1', '7.png')), load_image(os.path.join('pers1', '8.png'))]
 pers1_win_image = load_image(os.path.join('pers1', 'win.png'))
 pers1_lose_image = load_image(os.path.join('pers1', 'lose.png'))
-pers1_rerurn_game = load_image(os.path.join('pers1', 'return.png'))
+pers1_return_game = load_image(os.path.join('pers1', 'return.png'))
 
 class Snake:
     def __init__(self, x, y):
@@ -138,6 +138,14 @@ def snake():
 
 # ----------------------------------------- Подарки---------------------------------------------------------------------
 
+pers2_dialog = []
+for i in range(16):
+    pers2_dialog.append(load_image(os.path.join('pers2', f"{i + 1}.png")))
+
+pers2_win_image = load_image(os.path.join('pers2', 'win.png'))
+pers2_lose_image = load_image(os.path.join('pers2', 'lose.png'))
+pers2_return_game = load_image(os.path.join('pers2', 'return.png'))
+
 gift_image = pygame.transform.scale(load_image(os.path.join('gifts', 'gift2.png')), (50, 50))
 number_image = pygame.transform.scale(load_image(os.path.join('gifts', 'number.png')), (50, 30))
 
@@ -202,7 +210,7 @@ def one_image(image):
 
 
 # Взаимодействие
-def interaction(pers, game, dialog_images, win_image, lose_image):
+def interaction(pers, game, dialog_images, win_image, lose_image, return_image):
     dialog_image_count = 0
     is_dialog = True
     start_game = True
@@ -223,6 +231,8 @@ def interaction(pers, game, dialog_images, win_image, lose_image):
                         is_dialog = False
                         start_game = False
             pygame.display.flip()
+    else:
+        one_image(return_image)
 
     if start_game:
         pers.active_dialog = False
@@ -270,7 +280,7 @@ class Plate(pygame.sprite.Sprite):
 
 
 class Pers(pygame.sprite.Sprite):
-    def __init__(self, x, y, dialog_images, win_image, lose_image, game, group):
+    def __init__(self, x, y, dialog_images, win_image, lose_image, return_image, game, group):
         super().__init__(group, all_sprites)
 
         self.count_image = 0
@@ -281,6 +291,7 @@ class Pers(pygame.sprite.Sprite):
         self.dialog_images = dialog_images
         self.win_image = win_image
         self.lose_image = lose_image
+        self.return_image = return_image
 
         self.rect = self.image.get_rect()
         self.rect.x = x
@@ -297,7 +308,7 @@ class Pers(pygame.sprite.Sprite):
             self.image = self.images[self.count_image // 10]
 
     def start_game(self):
-        win = interaction(self, self.game, self.dialog_images, self.win_image, self.lose_image)
+        win = interaction(self, self.game, self.dialog_images, self.win_image, self.lose_image, self.return_image)
 
         if win:
             self.active_game = False
@@ -369,7 +380,7 @@ class DedMoroz(pygame.sprite.Sprite):
         self.rect.x = 0
 
     def move_back(self):
-        self.rect.x = 950
+        self.rect.x = 890
 
 
 if __name__ == '__main__':
@@ -378,7 +389,7 @@ if __name__ == '__main__':
     # Звуки
     get_gift = pygame.mixer.Sound(os.path.join('data', 'get_gift.mp3'))
 
-    # Создание групп и объектов
+    # Создание групп
     all_sprites = pygame.sprite.Group()
     perses_level_1 = pygame.sprite.Group()
     perses_level_2 = pygame.sprite.Group()
@@ -406,24 +417,28 @@ if __name__ == '__main__':
     image = pygame.transform.scale(plate2_image, (1010, 40))
     Plate(0, 570, image, plates_level_1)
     Plate(0, 570, image, plates_level_2)
-    image = pygame.transform.scale(plate1_image, (200, 35))
+    plate_image = pygame.transform.scale(plate1_image, (200, 35))
 
     # Уровень 1
-    Plate(10, 200, image, plates_level_1)
-    Plate(50, 200, image, plates_level_1)
-    Plate(200, 500, image, plates_level_1)
-    Plate(600, 500, image, plates_level_1)
-    Plate(800, 350, image, plates_level_1)
-    Plate(600, 200, image, plates_level_1)
-    Plate(400, 300, image, plates_level_1)
-    Pers(-20, 90, pers1_dialog, pers1_win_image, pers1_lose_image, snake, perses_level_1)
+    Plate(10, 200, plate_image, plates_level_1)
+    Plate(50, 200, plate_image, plates_level_1)
+    Plate(200, 500, plate_image, plates_level_1)
+    Plate(600, 500, plate_image, plates_level_1)
+    Plate(810, 350, plate_image, plates_level_1)
+    Plate(600, 200, plate_image, plates_level_1)
+    Plate(400, 300, plate_image, plates_level_1)
+    Pers(-20, 90, pers1_dialog, pers1_win_image, pers1_lose_image, pers1_return_game, snake, perses_level_1)
     Gift(280, 450, gifts_level_1)
     Gift(680, 450, gifts_level_1)
     Gift(750, 450, gifts_level_1)
 
     # Уровень 2
-    Plate(500, 500, image, plates_level_2)
-    Plate(200, 200, image, plates_level_2)
+    little_plate = pygame.transform.scale(plate1_image, (50, 35))
+    Plate(-5, 350, plate_image, plates_level_2)
+    Plate(400, 330, little_plate, plates_level_2)
+    Plate(580, 345, plate_image, plates_level_2)
+    Plate(800, 280, plate_image, plates_level_2)
+    Plate(460, 130, plate_image, plates_level_2)
 
     clock = pygame.time.Clock()
 
@@ -441,7 +456,7 @@ if __name__ == '__main__':
     groups_perses = [perses_level_1, perses_level_2]
     groups_plates = [plates_level_1, plates_level_2]
     groups_gifts = [gifts_level_1, gifts_level_2]
-    fons = [fon_level_1, fon_level_2]
+    fons = [fon_level_1, fon_level_1]
     fon_count = 1
     level_count = 1
     fon_image = fons[level_count - 1][fon_count - 1]
@@ -473,14 +488,20 @@ if __name__ == '__main__':
             right_move = False
 
         # Переход на соседние карты
-        if ded.rect.x > 950:
-            ded.move_next()
-            level_count = (level_count + 1) % (len(fons) + 1)
-            fon_count = 10
-        if ded.rect.x < -30:
-            ded.move_back()
-            level_count = (level_count - 1) % (len(fons) + 1)
-            fon_count = 10
+        if ded.rect.x > 895:
+            if level_count + 1 <= len(fons):
+                ded.move_next()
+                level_count = (level_count + 1) % (len(fons) + 1)
+                fon_count = 10
+            else:
+                right_move = False
+        if ded.rect.x < -20:
+            if level_count - 1 > 0:
+                ded.move_back()
+                level_count = (level_count - 1) % (len(fons) + 1)
+                fon_count = 10
+            else:
+                left_move = False
 
         # Прыжок
         if not ded.jump:
