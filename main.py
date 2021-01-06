@@ -181,7 +181,7 @@ class Gift(pygame.sprite.Sprite):
 
 # ----------------------------------------------------------------------------------------------------------------------
 
-
+# Выводится одна картинка до нажатия
 def one_image(image):
     flag = True
     while flag:
@@ -201,6 +201,7 @@ def one_image(image):
     return key
 
 
+# Взаимодействие
 def interaction(pers, game, dialog_images, win_image, lose_image):
     dialog_image_count = 0
     is_dialog = True
@@ -376,7 +377,6 @@ if __name__ == '__main__':
 
     # Звуки
     get_gift = pygame.mixer.Sound(os.path.join('data', 'get_gift.mp3'))
-
 
     # Создание групп и объектов
     all_sprites = pygame.sprite.Group()
