@@ -13,9 +13,13 @@ screen = pygame.display.set_mode(size)
 pygame.display.set_caption("Falling things")
 things_list = []
 bombs = []
-life = [1, 2, 3]
+life = [1, 2, 3, 4, 5]
 loosing_count = 0
 all_sprites = pygame.sprite.Group()
+board = pygame.sprite.Sprite()
+group_balls = pygame.sprite.Group()
+group_bombs = pygame.sprite.Group()
+group_board = pygame.sprite.Group()
 clock = pygame.time.Clock()
 
 
@@ -36,90 +40,102 @@ def load_image(name, colorkey=None):
 
 
 class Ball(pygame.sprite.Sprite):
-    image = load_image('tree.png', -1)
-
-    def __init__(self, x, y):
-        super().__init__(all_sprites)
-        self.image = Ball.image
-        self.image = pygame.transform.scale(self.image, (4, 4))
-        self.size = self.image.get_size()
+    def __init__(self, x, y, image):
+        super().__init__(group_balls, all_sprites)
+        self.image = image
         self.rect = self.image.get_rect()
-        self.rect.x = x
-        self.rect.y = y
+        self.x = x
+        self.y = y
+        self.rect.x = self.x
+        self.rect.y = self.y
 
     def update(self):
-        '''pygame.draw.circle(screen, WHITE, (self.rect.x, self.rect.y), 5)
-        self.rect = pygame.Rect(self.rect.x, self.rect.y, 4, 4)'''
-        self.rect.x = x
-        self.rect.y = y
+        global loosing_count
+        self.y += 1
+        if self.y > height - 50:
+            loosing_count += 1
+            print(loosing_count)
+            self.y = random.randrange(-50, -10)
+            self.x = random.randrange(0, width - 5)
+        '''pygame.draw.rect(screen, WHITE, (self.x, self.y, 10, 10))'''
+        self.rect = pygame.Rect(self.x, self.y, 10, 10)
 
 
 class Bomb(pygame.sprite.Sprite):
-    image = load_image('stone.png')
-
-    def __init__(self, x, y):
-        super().__init__(all_sprites)
-        self.image = Ball.image
-        self.size = self.image.get_size()
+    def __init__(self, x, y, image):
+        super().__init__(group_bombs, all_sprites)
+        self.image = image
         self.rect = self.image.get_rect()
-        self.rect.x = x
-        self.rect.y = y
+        self.x = x
+        self.y = y
+        self.rect.x = self.x
+        self.rect.y = self.y
 
     def update(self):
-        '''pygame.draw.circle(screen, RED, (self.x, self.y), 7)
-        self.rect = pygame.Rect(self.x, self.y, 6, 6)'''
-        self.rect.x = x
-        self.rect.y = y
+        self.y += 1
+        if self.y > height - 50:
+            self.y = random.randrange(-50, -10)
+            self.x = random.randrange(0, width - 5)
+        '''pygame.draw.circle(screen, RED, (self.x, self.y), 7)'''
+        self.rect = pygame.Rect(self.x, self.y, 6, 6)
 
 
 class Bar(pygame.sprite.Sprite):
-    image = load_image('bag.jpg')
-
-    def __init__(self, x, y):
-        super().__init__(all_sprites)
-        self.image = Ball.image
-        self.size = self.image.get_size()
+    def __init__(self, x, y, image):
+        super().__init__(group_board, all_sprites)
+        self.image = image
         self.rect = self.image.get_rect()
-        self.rect.x = x
-        self.rect.y = y
+        self.x = x
+        self.y = y
         self.w = 100
         self.h = 10
+        self.rect.x = self.x
+        self.rect.y = self.y
 
     def update(self):
-        '''pygame.draw.rect(screen, (0, 0, 190), (self.x, self.y, self.w, self.h))
-        self.rect = pygame.Rect(self.x, self.y, self.w, self.h)'''
-        self.rect.x = x
-        self.rect.y = y
+        '''pygame.draw.rect(screen, (0, 0, 190), (self.x, self.y, self.w, self.h))'''
+        self.rect = pygame.Rect(self.x - 30, self.y, self.w, self.h)
 
 
 def collision():
     for n, brick in enumerate(things_list):
         if brick.rect.colliderect(bar):
+            things_list[n].kill()
             things_list.pop(n)
+            print(len(things_list))
     for n, bomb in enumerate(bombs):
         if bomb.rect.colliderect(bar):
+            bombs[n].kill()
             bombs.pop(n)
             if life:
                 life.pop(-1)
 
 
 if __name__ == '__main__':
+    image_things = load_image('tree.png', -1)
+    image_things = pygame.transform.scale(image_things, (50, 50))
+    image_bomb = load_image('stone.png', -1)
+    image_bomb = pygame.transform.scale(image_bomb, (30, 30))
+    image_board = load_image('bag.jpg', -1)
+    image_board = pygame.transform.scale(image_board, (150, 60))
+    image_life = load_image('heart.jpg', -1)
+    image_life = pygame.transform.scale(image_life, (25, 25))
     for i in range(20):
         x = random.randrange(0, width - 5)
         y = random.randrange(-350, 300)
-        things_list.append(Ball(x, y))
+        things_list.append(Ball(x, y, image_things))
         if i % 5 == 0:
-            bombs.append(Bomb(random.randrange(0, width - 5), random.randrange(-350, 300)))
+            bombs.append(Bomb(random.randrange(0, width - 5), random.randrange(-350, 300), image_bomb))
 
-    bar = Bar(width // 2 - 65, height - 50)
+    bar = Bar(width // 2 - 65, height - 50, image_board)
     running = True
     while running:
         keys = pygame.key.get_pressed()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            '''if not life:
-                running = False'''
+            if not life:
+                running = False
         if keys[pygame.K_LEFT] or keys[pygame.K_a]:
             left_move = True
             right_move = False
@@ -129,44 +145,32 @@ if __name__ == '__main__':
         else:
             left_move = False
             right_move = False
-        if left_move and bar.rect.x > 5:
-            bar.rect.x -= 4
-        if right_move and bar.rect.x < width - 65:
-            bar.rect.x += 4
-        screen.fill((255, 0, 255))
+        if left_move and bar.x > 5:
+            bar.x -= 4
+        if right_move and bar.x < width - 65:
+            bar.x += 4
+        screen.fill(BLACK)
 
         for i in range(len(things_list)):
             Ball.update(things_list[i])
-            things_list[i].rect.y += 1
-
-            if things_list[i].rect.y > height - 50:
-                loosing_count += 1
-                print(loosing_count)
-                y = random.randrange(-50, -10)
-                things_list[i].rect.y = y
-                x = random.randrange(0, width - 5)
-                things_list[i].rect.x = x
 
         for i in range(len(bombs)):
             Bomb.update(bombs[i])
-            bombs[i].rect.y += 1
 
-            if bombs[i].rect.y > height - 50:
-                y = random.randrange(-50, -10)
-                bombs[i].rect.y = y
-                x = random.randrange(0, width - 5)
-                bombs[i].rect.x = x
         if loosing_count >= 10:
             life.pop(-1)
             loosing_count = 0
-        all_sprites.draw(screen)
-        all_sprites.update()
+
         for i in life:
-            pygame.draw.rect(screen, RED, (20 * i, 580, 15, 15))
+            life_rect = image_life.get_rect(center=(30 * i, 580))
+            screen.blit(image_life, life_rect)
+            '''pygame.draw.rect(screen, RED, (20 * i, 580, 15, 15))'''
 
         bar.update()
+        group_balls.draw(screen)
+        group_bombs.draw(screen)
+        group_board.draw(screen)
         collision()
         pygame.display.flip()
-
         clock.tick(60)
     pygame.quit()
