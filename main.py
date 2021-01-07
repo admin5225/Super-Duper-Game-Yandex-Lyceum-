@@ -4,7 +4,6 @@ import os
 import sys
 import random
 
-
 pygame.init()
 pygame.display.set_caption('Подвиги Деда Мороза')
 size = width, height = 1000, 600
@@ -43,6 +42,7 @@ pers1_dialog = [load_image(os.path.join('pers1', '1.png')), load_image(os.path.j
 pers1_win_image = load_image(os.path.join('pers1', 'win.png'))
 pers1_lose_image = load_image(os.path.join('pers1', 'lose.png'))
 pers1_return_game = load_image(os.path.join('pers1', 'return.png'))
+
 
 class Snake:
     def __init__(self, x, y):
@@ -133,6 +133,7 @@ def snake():
         return True
     return False
 
+
 # ----------------------------------------------------------------------------------------------------------------------
 
 
@@ -164,7 +165,6 @@ class Gift(pygame.sprite.Sprite):
         self.direction_move = -1
         self.move_count = 0
         self.delete = False
-
 
     def update(self):
         if self.delete:
@@ -250,6 +250,7 @@ def interaction(pers, game, dialog_images, win_image, lose_image, return_image):
                     exit = True
                     pygame.display.set_caption('Подвиги Деда Мороза')
             if exit:
+                pygame.display.set_caption('Подвиги Деда Мороза')
                 return is_win
 
 
@@ -528,7 +529,6 @@ if __name__ == '__main__':
         groups_perses[level_count - 1].draw(screen)
         groups_plates[level_count - 1].draw(screen)
         groups_gifts[level_count - 1].draw(screen)
-
 
         clock.tick(60)
         pygame.display.flip()
