@@ -210,7 +210,7 @@ def one_image(image):
 
 
 # Взаимодействие
-def interaction(pers, game, dialog_images, win_image, lose_image, return_image):
+def interaction(pers, game, dialog_images, win_image, lose_image, return_image, is_game):
     dialog_image_count = 0
     is_dialog = True
     start_game = True
@@ -233,6 +233,9 @@ def interaction(pers, game, dialog_images, win_image, lose_image, return_image):
             pygame.display.flip()
     else:
         one_image(return_image)
+
+    if not is_game:
+        return True
 
     if start_game:
         pers.active_dialog = False
@@ -281,7 +284,7 @@ class Plate(pygame.sprite.Sprite):
 
 
 class Pers(pygame.sprite.Sprite):
-    def __init__(self, x, y, dialog_images, win_image, lose_image, return_image, game, group):
+    def __init__(self, x, y, dialog_images, win_image, lose_image, return_image, game, group, is_game):
         super().__init__(group, all_sprites)
 
         self.count_image = 0
@@ -293,6 +296,7 @@ class Pers(pygame.sprite.Sprite):
         self.win_image = win_image
         self.lose_image = lose_image
         self.return_image = return_image
+        self.is_game = is_game
 
         self.rect = self.image.get_rect()
         self.rect.x = x
@@ -309,7 +313,7 @@ class Pers(pygame.sprite.Sprite):
             self.image = self.images[self.count_image // 10]
 
     def start_game(self):
-        win = interaction(self, self.game, self.dialog_images, self.win_image, self.lose_image, self.return_image)
+        win = interaction(self, self.game, self.dialog_images, self.win_image, self.lose_image, self.return_image, self.is_game)
 
         if win:
             self.active_game = False
@@ -321,9 +325,10 @@ class DedMoroz(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__(groupDED, all_sprites)
 
-        self.count_image_AFK = 1
+        self.count_image = 1
 
-        self.image = images_ded_AFK[self.count_image_AFK - 1]
+        self.image = images_ded_AFK[self.count_image - 1]
+        self.images = images_ded_AFK
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
         self.collect_gifts = True
@@ -348,12 +353,17 @@ class DedMoroz(pygame.sprite.Sprite):
             self.jump = True
             self.jump_count = self.speed_jump
 
+    def get_images(self, images):
+        if self.images != images:
+            self.images = images
+            self.count_image = 1
+
     def update(self):
         # Смена картинки
-        if self.count_image_AFK % 10 == 0:
-            self.image = images_ded_AFK[(self.count_image_AFK // 10) - 1]
+        if self.count_image % 10 == 0:
+            self.image = self.images[(self.count_image // 10) - 1]
             self.mask = pygame.mask.from_surface(self.image)
-        self.count_image_AFK = (self.count_image_AFK + 1) % (len(images_ded_AFK) * 10)
+        self.count_image = (self.count_image + 1) % (len(self.images) * 10)
 
         # Проверка на пересечение с платформами и движение (влево, впараво)
         if left_move:
@@ -412,6 +422,13 @@ if __name__ == '__main__':
     for i in range(1, 35):
         images_ded_AFK.append(load_image(f"ded{i}.png"))
 
+    images_ded_move_right = [load_image(os.path.join('movement', 'ded1.png')), load_image(os.path.join('movement', 'ded2.png')),
+                       load_image(os.path.join('movement', 'ded2.png'))]
+
+    images_ded_move_left = []
+    for el in images_ded_move_right:
+        images_ded_move_left.append(pygame.transform.flip(el, True, False))
+
     ded = DedMoroz(10, 410)
 
     # Растягивание картинки платформы до нужной длины и её создание
@@ -428,7 +445,7 @@ if __name__ == '__main__':
     Plate(810, 350, plate_image, plates_level_1)
     Plate(600, 200, plate_image, plates_level_1)
     Plate(400, 300, plate_image, plates_level_1)
-    Pers(-20, 90, pers1_dialog, pers1_win_image, pers1_lose_image, pers1_return_game, snake, perses_level_1)
+    Pers(-20, 90, pers1_dialog, pers1_win_image, pers1_lose_image, pers1_return_game, snake, perses_level_1, True)
     Gift(280, 450, gifts_level_1)
     Gift(680, 450, gifts_level_1)
     Gift(750, 450, gifts_level_1)
@@ -440,6 +457,7 @@ if __name__ == '__main__':
     Plate(580, 345, plate_image, plates_level_2)
     Plate(800, 280, plate_image, plates_level_2)
     Plate(460, 130, plate_image, plates_level_2)
+    Pers(150, 459, pers2_dialog, pers2_win_image, pers2_lose_image, pers2_return_game, snake, perses_level_2, True)
 
     clock = pygame.time.Clock()
 
@@ -481,12 +499,15 @@ if __name__ == '__main__':
         if keys[pygame.K_LEFT] or keys[pygame.K_a]:
             left_move = True
             right_move = False
+            ded.get_images(images_ded_move_left)
         elif keys[pygame.K_RIGHT] or keys[pygame.K_d]:
             left_move = False
             right_move = True
+            ded.get_images(images_ded_move_right)
         else:
             left_move = False
             right_move = False
+            ded.get_images(images_ded_AFK)
 
         # Переход на соседние карты
         if ded.rect.x > 895:
