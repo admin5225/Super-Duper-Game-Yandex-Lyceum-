@@ -86,7 +86,8 @@ def snake():
         pygame.draw.rect(screen, (190, 190, 190), [10, 20, 160, 560])
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                break
+                pygame.quit()
+                sys.exit()
             if event.type == pygame.KEYDOWN:
                 if (event.key == pygame.K_UP or event.key == pygame.K_w) and dx != 0:
                     time_dy = -1
@@ -136,6 +137,187 @@ def snake():
 
 # ----------------------------------------------------------------------------------------------------------------------
 
+# -------------------------------Собирание веток------------------------------------------------------------------------
+all_sprites = pygame.sprite.Group()
+board = pygame.sprite.Sprite()
+group_balls = pygame.sprite.Group()
+group_bombs = pygame.sprite.Group()
+group_board = pygame.sprite.Group()
+clock = pygame.time.Clock()
+loosing_count = 0
+things_list = []
+bombs = []
+total_count = 0
+life = [1, 2, 3]
+
+
+class Ball(pygame.sprite.Sprite):
+    def __init__(self, x, y, image):
+        super().__init__(group_balls, all_sprites)
+        self.image = image
+        self.rect = self.image.get_rect()
+        self.x = x
+        self.y = y
+        self.loosing_count = 0
+        self.rect.x = self.x
+        self.rect.y = self.y
+
+    def update(self):
+        global loosing_count
+        self.y += 1
+        if self.y > height - 50:
+            loosing_count += 1
+            print(loosing_count)
+            self.y = random.randrange(-50, -10)
+            self.x = random.randrange(0, width - 5)
+        self.rect = pygame.Rect(self.x, self.y, 10, 10)
+
+
+class Bomb(pygame.sprite.Sprite):
+    def __init__(self, x, y, image):
+        super().__init__(group_bombs, all_sprites)
+        self.image = image
+        self.rect = self.image.get_rect()
+        self.x = x
+        self.y = y
+        self.rect.x = self.x
+        self.rect.y = self.y
+
+    def update(self):
+        self.y += 1
+        if self.y > height - 50:
+            self.y = random.randrange(-50, -10)
+            self.x = random.randrange(0, width - 5)
+        self.rect = pygame.Rect(self.x, self.y, 6, 6)
+
+
+class Bar(pygame.sprite.Sprite):
+    def __init__(self, x, y, image):
+        super().__init__(group_board, all_sprites)
+        self.image = image
+        self.rect = self.image.get_rect()
+        self.x = x
+        self.y = y
+        self.w = 100
+        self.h = 10
+        self.rect.x = self.x
+        self.rect.y = self.y
+
+    def update(self):
+        self.rect = pygame.Rect(self.x - 30, self.y, self.w, self.h)
+
+
+def collision(bar):
+    global loosing_count, things_list, bombs, total_count, life
+    for n, thing in enumerate(things_list):
+        if thing.rect.colliderect(bar):
+            total_count += 1
+            things_list[n].kill()
+            things_list.pop(n)
+            print(len(things_list))
+    for n, bomb in enumerate(bombs):
+        if bomb.rect.colliderect(bar):
+            bombs[n].kill()
+            bombs.pop(n)
+            if life:
+                life.pop(-1)
+    return total_count
+
+
+def falling_things():
+    global loosing_count, things_list, bombs, total_count, life
+    pygame.init()
+    clock = pygame.time.Clock()
+    size = width, height = 1000, 600
+    screen = pygame.display.set_mode(size)
+    pygame.display.set_caption("Ловим ветки, а камни пропускаем")
+    text = pygame.font.SysFont('Times New Roman', 24)
+    count_things = 20
+    image_things = load_image('tree.png', -1)
+    image_things = pygame.transform.scale(image_things, (50, 50))
+    image_bomb = load_image('stone.png', -1)
+    image_bomb = pygame.transform.scale(image_bomb, (30, 30))
+    image_board = load_image('bag2.png', -1)
+    image_board = pygame.transform.scale(image_board, (150, 60))
+    image_life = load_image('heart.jpg', -1)
+    image_life = pygame.transform.scale(image_life, (25, 25))
+    background = load_image('background.gif')
+    bar = Bar(width // 2 - 65, height - 50, image_board)
+    for i in range(count_things):
+        x = random.randrange(0, width - 5)
+        y = random.randrange(-350, 300)
+        things_list.append(Ball(x, y, image_things))
+        if i % 5 == 0:
+            bombs.append(Bomb(random.randrange(0, width - 5), random.randrange(-350, 300), image_bomb))
+
+    running = True
+    while running:
+        screen.blit(background, (0, 0))
+        keys = pygame.key.get_pressed()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                break
+        if keys[pygame.K_LEFT] or keys[pygame.K_a]:
+            left_move = True
+            right_move = False
+        elif keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+            left_move = False
+            right_move = True
+        else:
+            left_move = False
+            right_move = False
+        if left_move and bar.x > 5:
+            bar.x -= 6
+        if right_move and bar.x < width - 100:
+            bar.x += 6
+
+        if not life:
+            break
+        if total_count == count_things:
+            break
+
+        for i in range(len(things_list)):
+            Ball.update(things_list[i])
+
+        for i in range(len(bombs)):
+            Bomb.update(bombs[i])
+
+        if loosing_count >= 10:
+            life.pop(-1)
+            loosing_count = 0
+
+        bar.update()
+        group_balls.draw(screen)
+        group_bombs.draw(screen)
+        group_board.draw(screen)
+
+        collision(bar)
+        for i in life:
+            life_rect = image_life.get_rect(center=((25 * i) - 10, 15))
+            screen.blit(image_life, life_rect)
+        screen_total = text.render(f'Счет: {total_count}', 0, (255, 255, 255))
+        screen.blit(screen_total, (width - 85, 0))
+        pygame.display.flip()
+        clock.tick(90)
+    if total_count == count_things:
+        return True
+    else:
+        bar.kill()
+        for i in bombs:
+            i.kill()
+        for i in things_list:
+            i.kill()
+        screen.blit(background, (0, 0))
+        loosing_count = 0
+        things_list = []
+        bombs = []
+        total_count = 0
+        life = [1, 2, 3]
+        count_things = 20
+        return False
+
+
+# -----------------------------------------------------------------------------------------------------------------------
 
 # ----------------------------------------- Подарки---------------------------------------------------------------------
 
@@ -313,7 +495,8 @@ class Pers(pygame.sprite.Sprite):
             self.image = self.images[self.count_image // 10]
 
     def start_game(self):
-        win = interaction(self, self.game, self.dialog_images, self.win_image, self.lose_image, self.return_image, self.is_game)
+        win = interaction(self, self.game, self.dialog_images, self.win_image, self.lose_image, self.return_image,
+                          self.is_game)
 
         if win:
             self.active_game = False
@@ -422,8 +605,9 @@ if __name__ == '__main__':
     for i in range(1, 35):
         images_ded_AFK.append(load_image(f"ded{i}.png"))
 
-    images_ded_move_right = [load_image(os.path.join('movement', 'ded1.png')), load_image(os.path.join('movement', 'ded2.png')),
-                       load_image(os.path.join('movement', 'ded2.png'))]
+    images_ded_move_right = [load_image(os.path.join('movement', 'ded1.png')),
+                             load_image(os.path.join('movement', 'ded2.png')),
+                             load_image(os.path.join('movement', 'ded2.png'))]
 
     images_ded_move_left = []
     for el in images_ded_move_right:
@@ -457,11 +641,12 @@ if __name__ == '__main__':
     Plate(580, 345, plate_image, plates_level_2)
     Plate(800, 280, plate_image, plates_level_2)
     Plate(460, 130, plate_image, plates_level_2)
-    Pers(150, 459, pers2_dialog, pers2_win_image, pers2_lose_image, pers2_return_game, snake, perses_level_2, True)
+    Pers(150, 459, pers2_dialog, pers2_win_image, pers2_lose_image, pers2_return_game, falling_things, perses_level_2,
+         True)
 
     clock = pygame.time.Clock()
 
-    # Фоны
+    # Фоныe
     fon_level_1 = []
     for i in range(150):
         image = load_image(os.path.join('background', os.path.join('level1', f'fon{i + 1}.png')))
