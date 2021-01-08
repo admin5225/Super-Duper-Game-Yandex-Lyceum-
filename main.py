@@ -138,6 +138,19 @@ def snake():
 # ----------------------------------------------------------------------------------------------------------------------
 
 # -------------------------------Собирание веток------------------------------------------------------------------------
+
+pers2_dialog = []
+for i in range(16):
+    pers2_dialog.append(load_image(os.path.join('pers2', f"{i + 1}.png")))
+
+pers2_win_image = load_image(os.path.join('pers2', 'win.png'))
+pers2_lose_image = load_image(os.path.join('pers2', 'lose.png'))
+pers2_return_game = load_image(os.path.join('pers2', 'return.png'))
+
+gift_image = pygame.transform.scale(load_image(os.path.join('gifts', 'gift2.png')), (50, 50))
+number_image = pygame.transform.scale(load_image(os.path.join('gifts', 'number.png')), (50, 30))
+
+
 all_sprites = pygame.sprite.Group()
 board = pygame.sprite.Sprite()
 group_balls = pygame.sprite.Group()
@@ -300,6 +313,7 @@ def falling_things():
         pygame.display.flip()
         clock.tick(90)
     if total_count == count_things:
+        Pers(780, 169, pers3_dialog, None, None, None, None, perses_level_2, False)
         return True
     else:
         bar.kill()
@@ -321,13 +335,9 @@ def falling_things():
 
 # ----------------------------------------- Подарки---------------------------------------------------------------------
 
-pers2_dialog = []
-for i in range(16):
-    pers2_dialog.append(load_image(os.path.join('pers2', f"{i + 1}.png")))
-
-pers2_win_image = load_image(os.path.join('pers2', 'win.png'))
-pers2_lose_image = load_image(os.path.join('pers2', 'lose.png'))
-pers2_return_game = load_image(os.path.join('pers2', 'return.png'))
+pers3_dialog = []
+for i in range(8):
+    pers3_dialog.append(load_image(os.path.join('pers3', f"{i + 1}.png")))
 
 gift_image = pygame.transform.scale(load_image(os.path.join('gifts', 'gift2.png')), (50, 50))
 number_image = pygame.transform.scale(load_image(os.path.join('gifts', 'number.png')), (50, 30))
@@ -446,7 +456,7 @@ def is_intersection(obj, group):
 
     for el in group:
         if pygame.sprite.collide_mask(obj, el):
-            if 120 <= (el.rect.y - obj.rect.y) <= 150:
+            if 110 <= (el.rect.y - obj.rect.y) <= 150:
                 intersection_plate = True
             else:
                 intersection_pers = True
@@ -514,7 +524,7 @@ class DedMoroz(pygame.sprite.Sprite):
         self.images = images_ded_AFK
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
-        self.collect_gifts = True
+        self.collect_gifts = False
 
         self.width = 150
         self.height = 150
@@ -540,14 +550,14 @@ class DedMoroz(pygame.sprite.Sprite):
         if self.images != images:
             self.images = images
             self.count_image = 1
-            self.rect.y -= 20
+            self.rect.y -= 5
 
     def update(self):
         # Смена картинки
-        if self.count_image % 5 == 0:
-            self.image = self.images[((self.count_image // 5) - 1)]
+        if self.count_image % 10 == 0:
+            self.image = self.images[((self.count_image // 10) - 1)]
             self.mask = pygame.mask.from_surface(self.image)
-        self.count_image = (self.count_image + 1) % ((len(self.images) * 5) + 1)
+        self.count_image = (self.count_image + 1) % ((len(self.images) * 10) + 1)
 
         # Проверка на пересечение с платформами и движение (влево, впараво)
         if left_move:
@@ -647,6 +657,7 @@ if __name__ == '__main__':
     Pers(150, 459, pers2_dialog, pers2_win_image, pers2_lose_image, pers2_return_game, falling_things, perses_level_2,
          True)
 
+
     clock = pygame.time.Clock()
 
     # Фоныe
@@ -712,6 +723,8 @@ if __name__ == '__main__':
                 fon_count = 10
             else:
                 left_move = False
+        if ded.rect.y > 880:
+            ded.rect.y -= 30
 
         # Прыжок
         if not ded.jump:
