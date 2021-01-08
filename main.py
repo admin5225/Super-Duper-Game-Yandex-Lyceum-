@@ -540,13 +540,14 @@ class DedMoroz(pygame.sprite.Sprite):
         if self.images != images:
             self.images = images
             self.count_image = 1
+            self.rect.y -= 20
 
     def update(self):
         # Смена картинки
-        if self.count_image % 10 == 0:
-            self.image = self.images[(self.count_image // 10) - 1]
+        if self.count_image % 5 == 0:
+            self.image = self.images[((self.count_image // 5) - 1)]
             self.mask = pygame.mask.from_surface(self.image)
-        self.count_image = (self.count_image + 1) % (len(self.images) * 10)
+        self.count_image = (self.count_image + 1) % ((len(self.images) * 5) + 1)
 
         # Проверка на пересечение с платформами и движение (влево, впараво)
         if left_move:
@@ -607,7 +608,9 @@ if __name__ == '__main__':
 
     images_ded_move_right = [load_image(os.path.join('movement', 'ded1.png')),
                              load_image(os.path.join('movement', 'ded2.png')),
-                             load_image(os.path.join('movement', 'ded2.png'))]
+                             load_image(os.path.join('movement', 'ded3.png')),
+                             load_image(os.path.join('movement', 'ded4.png')),
+                             load_image(os.path.join('movement', 'ded5.png'))]
 
     images_ded_move_left = []
     for el in images_ded_move_right:
