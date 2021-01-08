@@ -13,8 +13,10 @@ screen = pygame.display.set_mode(size)
 pygame.display.set_caption("Falling things")
 things_list = []
 bombs = []
-life = [1, 2, 3, 4, 5]
+life = [1, 2, 3]
 loosing_count = 0
+total_count = 0
+text = pygame.font.SysFont('Times New Roman', 24)
 all_sprites = pygame.sprite.Group()
 board = pygame.sprite.Sprite()
 group_balls = pygame.sprite.Group()
@@ -98,8 +100,10 @@ class Bar(pygame.sprite.Sprite):
 
 
 def collision():
-    for n, brick in enumerate(things_list):
-        if brick.rect.colliderect(bar):
+    global total_count
+    for n, thing in enumerate(things_list):
+        if thing.rect.colliderect(bar):
+            total_count += 1
             things_list[n].kill()
             things_list.pop(n)
             print(len(things_list))
@@ -112,15 +116,17 @@ def collision():
 
 
 if __name__ == '__main__':
+    count_things = 20
     image_things = load_image('tree.png', -1)
     image_things = pygame.transform.scale(image_things, (50, 50))
     image_bomb = load_image('stone.png', -1)
     image_bomb = pygame.transform.scale(image_bomb, (30, 30))
-    image_board = load_image('bag.jpg', -1)
+    image_board = load_image('bag2.png', -1)
     image_board = pygame.transform.scale(image_board, (150, 60))
     image_life = load_image('heart.jpg', -1)
     image_life = pygame.transform.scale(image_life, (25, 25))
-    for i in range(20):
+    background = load_image('background.gif')
+    for i in range(count_things):
         x = random.randrange(0, width - 5)
         y = random.randrange(-350, 300)
         things_list.append(Ball(x, y, image_things))
@@ -130,11 +136,15 @@ if __name__ == '__main__':
     bar = Bar(width // 2 - 65, height - 50, image_board)
     running = True
     while running:
+        '''screen.fill((213, 0, 0))'''
+        screen.blit(background, (0, 0))
         keys = pygame.key.get_pressed()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
             if not life:
+                running = False
+            if total_count == count_things:
                 running = False
         if keys[pygame.K_LEFT] or keys[pygame.K_a]:
             left_move = True
@@ -146,10 +156,10 @@ if __name__ == '__main__':
             left_move = False
             right_move = False
         if left_move and bar.x > 5:
-            bar.x -= 4
-        if right_move and bar.x < width - 65:
-            bar.x += 4
-        screen.fill(BLACK)
+            bar.x -= 6
+        if right_move and bar.x < width - 100:
+            bar.x += 6
+        '''screen.fill(BLACK)'''
 
         for i in range(len(things_list)):
             Ball.update(things_list[i])
@@ -161,16 +171,17 @@ if __name__ == '__main__':
             life.pop(-1)
             loosing_count = 0
 
-        for i in life:
-            life_rect = image_life.get_rect(center=(30 * i, 580))
-            screen.blit(image_life, life_rect)
-            '''pygame.draw.rect(screen, RED, (20 * i, 580, 15, 15))'''
-
         bar.update()
         group_balls.draw(screen)
         group_bombs.draw(screen)
         group_board.draw(screen)
+
         collision()
+        for i in life:
+            life_rect = image_life.get_rect(center=((25 * i) - 10, 15))
+            screen.blit(image_life, life_rect)
+        screen_total = text.render(f'Счет: {total_count}', 0, (255, 255, 255))
+        screen.blit(screen_total, (width - 85, 0))
         pygame.display.flip()
-        clock.tick(60)
+        clock.tick(90)
     pygame.quit()
