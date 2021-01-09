@@ -33,6 +33,9 @@ count_blocks = 20
 size_block = 27
 otstup = 1
 total = 0
+eating_apple = pygame.mixer.Sound(os.path.join('data', 'eating_apple.mp3'))
+eating_snake = pygame.mixer.Sound(os.path.join('data', 'eating_snake.mp3'))
+meeting_wall = pygame.mixer.Sound(os.path.join('data', 'meeting_with_wall.mp3'))
 text = pygame.font.SysFont('Times New Roman', 36)
 
 pers1_dialog = [load_image(os.path.join('pers1', '1.png')), load_image(os.path.join('pers1', '2.png')),
@@ -110,9 +113,11 @@ def snake():
                 draw_block((255, 255, 255), y, x)
         snakes_head = snake_blocks[-1]
         if not snakes_head.check_crash():
+            meeting_wall.play()
             break
         draw_snake((255, 0, 0), apple.x, apple.y)
         if apple == snakes_head:
+            eating_apple.play()
             total += 1
             fps = total // 1 + 5
             snake_blocks.append(apple)
@@ -125,6 +130,7 @@ def snake():
         dx, dy = time_dx, time_dy
         new_head = Snake(snakes_head.x + dy, snakes_head.y + dx)
         if new_head in snake_blocks:
+            eating_snake.play()
             break
         snake_blocks.append(new_head)
         snake_blocks.pop(0)
@@ -149,8 +155,9 @@ pers2_return_game = load_image(os.path.join('pers2', 'return.png'))
 
 gift_image = pygame.transform.scale(load_image(os.path.join('gifts', 'gift2.png')), (50, 50))
 number_image = pygame.transform.scale(load_image(os.path.join('gifts', 'number.png')), (50, 30))
-
-
+lose_heart = pygame.mixer.Sound(os.path.join('data', 'lose_heart.mp3'))
+get_tree = pygame.mixer.Sound(os.path.join('data', 'get_tree.mp3'))
+get_stone = pygame.mixer.Sound(os.path.join('data', 'get_stone.mp3'))
 all_sprites = pygame.sprite.Group()
 board = pygame.sprite.Sprite()
 group_balls = pygame.sprite.Group()
@@ -227,12 +234,15 @@ def collision(bar):
             total_count += 1
             things_list[n].kill()
             things_list.pop(n)
+            get_tree.play()
             print(len(things_list))
     for n, bomb in enumerate(bombs):
         if bomb.rect.colliderect(bar):
             bombs[n].kill()
             bombs.pop(n)
+            get_stone.play()
             if life:
+                lose_heart.play()
                 life.pop(-1)
     return total_count
 
@@ -269,7 +279,8 @@ def falling_things():
         keys = pygame.key.get_pressed()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                break
+                pygame.quit()
+                sys.exit()
         if keys[pygame.K_LEFT] or keys[pygame.K_a]:
             left_move = True
             right_move = False
@@ -296,6 +307,7 @@ def falling_things():
             Bomb.update(bombs[i])
 
         if loosing_count >= 10:
+            lose_heart.play()
             life.pop(-1)
             loosing_count = 0
 
