@@ -355,6 +355,12 @@ gift_image = pygame.transform.scale(load_image(os.path.join('gifts', 'gift2.png'
 number_image = pygame.transform.scale(load_image(os.path.join('gifts', 'number.png')), (50, 30))
 
 
+pers4_dialog = []
+for i in range(8):
+    pers4_dialog.append(load_image(os.path.join('pers4', f"{i + 1}.png")))
+pers4_win_image = load_image(os.path.join('pers4', "win.png"))
+
+
 # Указываются координаты и группа уровня
 class Gift(pygame.sprite.Sprite):
     def __init__(self, x, y, group):
@@ -389,6 +395,42 @@ class Gift(pygame.sprite.Sprite):
     def destroy(self):
         self.delete = True
         self.move_count = 0
+
+
+def gifts():
+    Gift(280, 450, gifts_level_1)
+    Gift(210, 450, gifts_level_1)
+    Gift(350, 450, gifts_level_1)
+    Gift(610, 450, gifts_level_1)
+    Gift(680, 450, gifts_level_1)
+    Gift(750, 450, gifts_level_1)
+    Gift(410, 250, gifts_level_1)
+    Gift(480, 250, gifts_level_1)
+    Gift(550, 250, gifts_level_1)
+    Gift(600, 520, gifts_level_2)
+    Gift(670, 520, gifts_level_2)
+    Gift(530, 520, gifts_level_2)
+    Gift(460, 520, gifts_level_2)
+    Gift(740, 520, gifts_level_2)
+    Gift(590, 295, gifts_level_2)
+    Gift(660, 295, gifts_level_2)
+    Gift(730, 295, gifts_level_2)
+    Gift(470, 80, gifts_level_2)
+    Gift(540, 80, gifts_level_2)
+    Gift(610, 80, gifts_level_2)
+    Gift(400, 80, gifts_level_2)
+    Gift(330, 80, gifts_level_2)
+    Gift(260, 80, gifts_level_2)
+    Gift(190, 80, gifts_level_2)
+    Gift(260, 150, gifts_level_2)
+    Gift(190, 150, gifts_level_2)
+    Gift(410, 230, gifts_level_3)
+    Gift(480, 230, gifts_level_3)
+    Gift(550, 230, gifts_level_3)
+    Gift(210, 200, gifts_level_3)
+
+    ded.collect_gifts = True
+    return True
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -603,6 +645,8 @@ class DedMoroz(pygame.sprite.Sprite):
 if __name__ == '__main__':
     screen.fill((255, 255, 255))
 
+    font = pygame.font.Font(None, 36)
+
     # Звуки
     get_gift = pygame.mixer.Sound(os.path.join('data', 'get_gift.mp3'))
 
@@ -610,10 +654,16 @@ if __name__ == '__main__':
     all_sprites = pygame.sprite.Group()
     perses_level_1 = pygame.sprite.Group()
     perses_level_2 = pygame.sprite.Group()
+    perses_level_3 = pygame.sprite.Group()
+    perses_level_4 = pygame.sprite.Group()
     plates_level_1 = pygame.sprite.Group()
     plates_level_2 = pygame.sprite.Group()
+    plates_level_3 = pygame.sprite.Group()
+    plates_level_4 = pygame.sprite.Group()
     gifts_level_1 = pygame.sprite.Group()
     gifts_level_2 = pygame.sprite.Group()
+    gifts_level_3 = pygame.sprite.Group()
+    gifts_level_4 = pygame.sprite.Group()
     groupDED = pygame.sprite.Group()
 
     # Картинка с платформой
@@ -644,6 +694,7 @@ if __name__ == '__main__':
     image = pygame.transform.scale(plate2_image, (1010, 40))
     Plate(0, 570, image, plates_level_1)
     Plate(0, 570, image, plates_level_2)
+    Plate(0, 570, image, plates_level_3)
     plate_image = pygame.transform.scale(plate1_image, (200, 35))
 
     # Уровень 1
@@ -655,9 +706,6 @@ if __name__ == '__main__':
     Plate(600, 200, plate_image, plates_level_1)
     Plate(400, 300, plate_image, plates_level_1)
     Pers(-20, 90, pers1_dialog, pers1_win_image, pers1_lose_image, pers1_return_game, snake, perses_level_1, True)
-    Gift(280, 450, gifts_level_1)
-    Gift(680, 450, gifts_level_1)
-    Gift(750, 450, gifts_level_1)
 
     # Уровень 2
     little_plate = pygame.transform.scale(plate1_image, (50, 35))
@@ -668,6 +716,12 @@ if __name__ == '__main__':
     Plate(460, 130, plate_image, plates_level_2)
     Pers(150, 459, pers2_dialog, pers2_win_image, pers2_lose_image, pers2_return_game, falling_things, perses_level_2,
          True)
+
+    # Уровень 3
+    Plate(200, 250, plate_image, plates_level_3)
+    Plate(400, 280, plate_image, plates_level_3)
+    Plate(600, 250, plate_image, plates_level_3)
+    Pers(600, 140, pers4_dialog, pers4_win_image, None, None, gifts, perses_level_3, True)
 
 
     clock = pygame.time.Clock()
@@ -683,15 +737,16 @@ if __name__ == '__main__':
         fon_level_2.append(pygame.transform.scale(image, (1000, 600)))
 
     # Группы для смены локаций
-    groups_perses = [perses_level_1, perses_level_2]
-    groups_plates = [plates_level_1, plates_level_2]
-    groups_gifts = [gifts_level_1, gifts_level_2]
-    fons = [fon_level_1, fon_level_1]
+    groups_perses = [perses_level_1, perses_level_2, perses_level_3]
+    groups_plates = [plates_level_1, plates_level_2, plates_level_3]
+    groups_gifts = [gifts_level_1, gifts_level_2, gifts_level_3]
+    fons = [fon_level_1, fon_level_1, fon_level_1]
     fon_count = 1
     level_count = 1
     fon_image = fons[level_count - 1][fon_count - 1]
 
     left_move, right_move, move = False, False, False
+    kol_gifts = 0
 
     running = True
     while running:
@@ -752,11 +807,18 @@ if __name__ == '__main__':
 
         # Собирание подарков (одно из заданий)
         if ded.collect_gifts:
+            if kol_gifts == 30:
+                ded.collect_gifts = False
+
             if is_intersection(ded, groups_gifts[level_count - 1])[1]:
                 gift = pygame.sprite.spritecollideany(ded, groups_gifts[level_count - 1])
                 if not gift.delete:
+                    kol_gifts += 1
                     get_gift.play()
                     gift.destroy()
+            text = font.render(f"Подарков собрано: {kol_gifts}", True, (255, 20, 147))
+            screen.blit(text, (350, 25))
+
 
         all_sprites.update()
         groupDED.draw(screen)
