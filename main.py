@@ -137,6 +137,7 @@ def snake():
         clock.tick(fps)
 
     if total >= 7:
+        fons.append(fon_level_1)
         return True
     return False
 
@@ -325,7 +326,9 @@ def falling_things():
         pygame.display.flip()
         clock.tick(90)
     if total_count == count_things:
-        Pers(780, 169, pers3_dialog, None, None, None, None, perses_level_2, False)
+        global pers3
+        pers3 = Pers(780, 169, pers3_dialog, pers3_win_image, None, None, pers3_pass_game, perses_level_2)
+
         return True
     else:
         bar.kill()
@@ -348,8 +351,9 @@ def falling_things():
 # ----------------------------------------- Подарки---------------------------------------------------------------------
 
 pers3_dialog = []
-for i in range(8):
+for i in range(7):
     pers3_dialog.append(load_image(os.path.join('pers3', f"{i + 1}.png")))
+pers3_win_image = load_image(os.path.join('pers3', 'win.png'))
 
 gift_image = pygame.transform.scale(load_image(os.path.join('gifts', 'gift2.png')), (50, 50))
 number_image = pygame.transform.scale(load_image(os.path.join('gifts', 'number.png')), (50, 30))
@@ -397,6 +401,11 @@ class Gift(pygame.sprite.Sprite):
         self.move_count = 0
 
 
+def pers3_pass_game():
+    fons.append(fon_level_1)
+    return True
+
+
 def gifts():
     Gift(280, 450, gifts_level_1)
     Gift(210, 450, gifts_level_1)
@@ -430,6 +439,8 @@ def gifts():
     Gift(210, 200, gifts_level_3)
 
     ded.collect_gifts = True
+    pers3.kill()
+    pers4.kill()
     return True
 
 
@@ -456,7 +467,7 @@ def one_image(image):
 
 
 # Взаимодействие
-def interaction(pers, game, dialog_images, win_image, lose_image, return_image, is_game):
+def interaction(pers, game, dialog_images, win_image, lose_image, return_image):
     dialog_image_count = 0
     is_dialog = True
     start_game = True
@@ -479,9 +490,6 @@ def interaction(pers, game, dialog_images, win_image, lose_image, return_image, 
             pygame.display.flip()
     else:
         one_image(return_image)
-
-    if not is_game:
-        return True
 
     if start_game:
         pers.active_dialog = False
@@ -530,7 +538,7 @@ class Plate(pygame.sprite.Sprite):
 
 
 class Pers(pygame.sprite.Sprite):
-    def __init__(self, x, y, dialog_images, win_image, lose_image, return_image, game, group, is_game):
+    def __init__(self, x, y, dialog_images, win_image, lose_image, return_image, game, group):
         super().__init__(group, all_sprites)
 
         self.count_image = 0
@@ -542,7 +550,6 @@ class Pers(pygame.sprite.Sprite):
         self.win_image = win_image
         self.lose_image = lose_image
         self.return_image = return_image
-        self.is_game = is_game
 
         self.rect = self.image.get_rect()
         self.rect.x = x
@@ -559,8 +566,7 @@ class Pers(pygame.sprite.Sprite):
             self.image = self.images[self.count_image // 10]
 
     def start_game(self):
-        win = interaction(self, self.game, self.dialog_images, self.win_image, self.lose_image, self.return_image,
-                          self.is_game)
+        win = interaction(self, self.game, self.dialog_images, self.win_image, self.lose_image, self.return_image)
 
         if win:
             self.active_game = False
@@ -705,7 +711,7 @@ if __name__ == '__main__':
     Plate(810, 350, plate_image, plates_level_1)
     Plate(600, 200, plate_image, plates_level_1)
     Plate(400, 300, plate_image, plates_level_1)
-    Pers(-20, 90, pers1_dialog, pers1_win_image, pers1_lose_image, pers1_return_game, snake, perses_level_1, True)
+    Pers(-20, 90, pers1_dialog, pers1_win_image, pers1_lose_image, pers1_return_game, snake, perses_level_1)
 
     # Уровень 2
     little_plate = pygame.transform.scale(plate1_image, (50, 35))
@@ -714,14 +720,13 @@ if __name__ == '__main__':
     Plate(580, 345, plate_image, plates_level_2)
     Plate(800, 280, plate_image, plates_level_2)
     Plate(460, 130, plate_image, plates_level_2)
-    Pers(150, 459, pers2_dialog, pers2_win_image, pers2_lose_image, pers2_return_game, falling_things, perses_level_2,
-         True)
+    Pers(150, 459, pers2_dialog, pers2_win_image, pers2_lose_image, pers2_return_game, falling_things, perses_level_2)
 
     # Уровень 3
     Plate(200, 250, plate_image, plates_level_3)
     Plate(400, 280, plate_image, plates_level_3)
     Plate(600, 250, plate_image, plates_level_3)
-    Pers(600, 140, pers4_dialog, pers4_win_image, None, None, gifts, perses_level_3, True)
+    pers4 = Pers(600, 140, pers4_dialog, pers4_win_image, None, None, gifts, perses_level_3)
 
 
     clock = pygame.time.Clock()
@@ -740,7 +745,7 @@ if __name__ == '__main__':
     groups_perses = [perses_level_1, perses_level_2, perses_level_3]
     groups_plates = [plates_level_1, plates_level_2, plates_level_3]
     groups_gifts = [gifts_level_1, gifts_level_2, gifts_level_3]
-    fons = [fon_level_1, fon_level_1, fon_level_1]
+    fons = [fon_level_1]
     fon_count = 1
     level_count = 1
     fon_image = fons[level_count - 1][fon_count - 1]
