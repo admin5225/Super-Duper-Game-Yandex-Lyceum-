@@ -346,7 +346,213 @@ def falling_things():
         return False
 
 
-# -----------------------------------------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------------------------------
+
+# ----------------------------------------- Арканойд--------------------------------------------------------------------
+pygame.init()
+size = width, height = 1000, 600
+screen = pygame.display.set_mode(size)
+get_bricks = pygame.mixer.Sound(os.path.join('data', 'bricks.mp3'))
+get_ball_jump = pygame.mixer.Sound(os.path.join('data', 'lol.mp3'))
+total = 0
+text = pygame.font.SysFont('Times New Roman', 24)
+speed = 2
+clock = pygame.time.Clock()
+all_sprites_arkanoid = pygame.sprite.Group()
+background = load_image('fon_truba.jpg')
+error_game = False
+bricks = []
+
+
+class Brick(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__(all_sprites_arkanoid)
+        self.x = x
+        self.y = y
+        self.rect = pygame.Rect(self.x, self.y, 60, 15)
+
+    def update(self):
+        pygame.draw.rect(screen, pygame.Color('#ffcc00'), (self.x, self.y, 60, 15))
+
+
+class player(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__(all_sprites_arkanoid)
+        self.x = x
+        self.y = y
+        self.w = 100
+        self.h = 10
+
+    def update(self):
+        pygame.draw.rect(screen, (0, 0, 190), (self.x, self.y, self.w, self.h))
+        self.rect = pygame.Rect(self.x, self.y, self.w, self.h)
+
+
+class Ball(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__(all_sprites_arkanoid)
+        self.x = x
+        self.y = y
+        self.ball_x = 'left'
+        self.ball_y = 'down'
+
+    def update(self):
+        if self.ball_x == "left":
+            self.x -= speed
+            if self.x < 10:
+                self.ball_x = "right"
+        if self.ball_y == 'down':
+            self.y += speed
+        if self.ball_y == 'up':
+            self.y -= speed
+            if self.y < 10:
+                self.ball_y = 'down'
+        if self.ball_x == "right":
+            self.x += speed
+            if self.x > width - 20:
+                self.ball_x = "left"
+        pygame.draw.circle(screen, (255, 255, 255), (self.x, self.y), 10)
+        self.rect = pygame.Rect(self.x, self.y, 10, 10)
+
+
+bar = player(width // 2 - 65, 550)
+ball = Ball(width // 2, height // 2)
+
+
+def collision():
+    global total, bricks, error_game
+    if ball.rect.colliderect(bar):
+        get_ball_jump.play()
+        ball.ball_y = "up"
+
+    for n, brick in enumerate(bricks):
+        if ball.rect.colliderect(brick):
+            get_ball_jump.play()
+            if ball.ball_y == "up":
+                if ball.y == (brick.y + 20 - speed):
+                    ball.ball_y = "down"
+                else:
+                    if ball.ball_x == "left":
+                        ball.ball_x = "right"
+                    else:
+                        ball.ball_x = "left"
+            else:
+                if ball.y <= brick.y:
+                    ball.ball_y = "up"
+                else:
+                    if ball.ball_x == "left":
+                        ball.ball_x = "right"
+                    else:
+                        ball.ball_x = "left"
+            get_bricks.play()
+            bricks.pop(n)
+            brick.kill()
+            total += 1
+
+    if ball.y > 570:
+        error_game = True
+
+
+def create_bricks():
+    global bricks
+    level = ''
+    bricks = []
+    h = 30
+    w = 0
+    n = 15
+    for i in range(1, n * 8):
+        if i % n == 0:
+            level += '\t'
+        level += str(random.randint(0, 1))
+    level = level.split('\t')
+    for line in level:
+        for brick in line:
+            if brick == "1":
+                bricks.append(Brick(20 + w * 70, h))
+            w += 1
+            if w == n:
+                w = 0
+                h += 30
+    print(len(bricks))
+    return bricks
+
+
+def show_bricks():
+    for brick in bricks:
+        brick.update()
+
+
+def arkanoid():
+    global bricks, error_game, total
+    pygame.display.set_caption("Арканойд")
+    first_briks = create_bricks()
+    len_first_briks = len(first_briks)
+    running = True
+    while running:
+        screen.blit(background, (0, 0))
+        '''screen.fill((0, 0, 0))'''
+        keys = pygame.key.get_pressed()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+        if keys[pygame.K_LEFT] or keys[pygame.K_a]:
+            left_move = True
+            right_move = False
+        elif keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+            left_move = False
+            right_move = True
+        else:
+            left_move = False
+            right_move = False
+        if left_move and bar.x > 5:
+            bar.x -= 4
+        if right_move and bar.x < width - 100:
+            bar.x += 4
+        ball.update()
+        bar.update()
+        collision()
+        screen_total = text.render(f'Счет: {total}', 0, (255, 255, 255))
+        screen.blit(screen_total, (width // 2 - 50, height - 30))
+        show_bricks()
+        pygame.display.update()
+
+        clock.tick(120)
+        if error_game:
+            total = 0
+            bar.kill()
+            ball.x = width // 2
+            ball.y = height // 2
+            ball.kill()
+            error_game = False
+            for n, brick in enumerate(bricks):
+                brick.kill()
+                bricks.pop(n)
+            for n, brick in enumerate(first_briks):
+                brick.kill()
+                bricks.pop(n)
+            '''first_briks = create_bricks()'''
+            print(all_sprites_arkanoid)
+            for i in all_sprites_arkanoid:
+                i.kill()
+            print(all_sprites_arkanoid)
+            return False
+        if total == len_first_briks:
+            bar.kill()
+            ball.kill()
+            print(total)
+            print(bricks)
+            for n, brick in enumerate(bricks):
+                brick.kill()
+                bricks.pop(n)
+            for n, brick in enumerate(first_briks):
+                brick.kill()
+                bricks.pop(n)
+            for i in all_sprites_arkanoid:
+                i.kill()
+            return True
+    pygame.quit()
+
 
 # ----------------------------------------- Подарки---------------------------------------------------------------------
 
@@ -357,7 +563,6 @@ pers3_win_image = load_image(os.path.join('pers3', 'win.png'))
 
 gift_image = pygame.transform.scale(load_image(os.path.join('gifts', 'gift2.png')), (50, 50))
 number_image = pygame.transform.scale(load_image(os.path.join('gifts', 'number.png')), (50, 30))
-
 
 pers4_dialog = []
 for i in range(8):
@@ -453,6 +658,8 @@ for i in range(9):
 pers5_win_image = load_image(os.path.join('pers5', 'win.png'))
 pers5_lose_image = load_image(os.path.join('pers5', 'lose.png'))
 pers5_return_game = load_image(os.path.join('pers5', 'return.png'))
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 # Выводится одна картинка до нажатия
 def one_image(image):
@@ -685,12 +892,11 @@ def check_move(is_prolog=False):
             left_move = False
 
 
-
 def prolog():
     global prolog_fon_count, prolog_fon_image
 
     text1 = font.render(f"Передвижение:", True, (0, 0, 128))
-    text2 = font.render(f"<--    -->", True,  (0, 0, 128))
+    text2 = font.render(f"<--    -->", True, (0, 0, 128))
     text3 = font.render(f"или", True, (0, 0, 128))
     text4 = font.render(f"A        D", True, (0, 0, 128))
     text5 = font.render(f"Прыжок", True, (0, 0, 128))
@@ -833,6 +1039,7 @@ if __name__ == '__main__':
     Pers(150, 459, pers2_dialog, pers2_win_image, pers2_lose_image, pers2_return_game, falling_things, perses_level_2)
 
     # Уровень 3
+    Plate(0, 280, plate_image, plates_level_3)
     Plate(200, 250, plate_image, plates_level_3)
     Plate(400, 280, plate_image, plates_level_3)
     Plate(600, 250, plate_image, plates_level_3)
@@ -845,7 +1052,7 @@ if __name__ == '__main__':
     Plate(500, 200, plate_image, plates_level_4)
     Plate(450, 200, plate_image, plates_level_4)
     Plate(630, 150, plate_image, plates_level_4)
-    Pers(630, 40, pers5_dialog, pers5_win_image, pers5_lose_image, pers5_return_game, snake, perses_level_4)
+    Pers(630, 40, pers5_dialog, pers5_win_image, pers5_lose_image, pers5_return_game, arkanoid, perses_level_4)
 
     clock = pygame.time.Clock()
 
@@ -882,7 +1089,7 @@ if __name__ == '__main__':
     Plate(0, 570, prolog_plate, prolog_plates)
     Plate(800, 570, prolog_plate, prolog_plates)
 
-    #prolog()
+    # prolog()
 
     ded = DedMoroz(10, 410)
     ded.step = 5
