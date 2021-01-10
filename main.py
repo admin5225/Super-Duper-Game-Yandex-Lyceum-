@@ -648,6 +648,103 @@ class DedMoroz(pygame.sprite.Sprite):
         self.rect.x = 890
 
 
+def check_move(is_prolog=False):
+    global left_move, right_move
+
+    keys = pygame.key.get_pressed()
+
+    # Передвижение деда
+    if keys[pygame.K_LEFT] or keys[pygame.K_a]:
+        left_move = True
+        right_move = False
+        ded.get_images(images_ded_move_left)
+    elif keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+        left_move = False
+        right_move = True
+        ded.get_images(images_ded_move_right)
+    else:
+        left_move = False
+        right_move = False
+        ded.get_images(images_ded_AFK)
+
+    # Прыжок
+    if not ded.jump:
+        if keys[pygame.K_UP] or keys[pygame.K_w]:
+            ded.get_jump()
+
+    if is_prolog:
+        if ded.rect.x < -20:
+            left_move = False
+
+
+
+def prolog():
+    global prolog_fon_count, prolog_fon_image
+
+    text1 = font.render(f"Передвижение:", True, (0, 0, 128))
+    text2 = font.render(f"<--    -->", True,  (0, 0, 128))
+    text3 = font.render(f"или", True, (0, 0, 128))
+    text4 = font.render(f"A        D", True, (0, 0, 128))
+    text5 = font.render(f"Прыжок", True, (0, 0, 128))
+    text6 = font.render(f"W  или  ^", True, (0, 0, 128))
+    text7 = font.render(f"перепрыгните через яму", True, (0, 0, 128))
+
+    print_text2 = False
+    run = True
+    while run:
+        screen.blit(prolog_fon_image, (0, 0))
+        if prolog_fon_count % 5 == 0:
+            prolog_fon_image = prolog_fons[(prolog_fon_count // 5) - 1]
+        prolog_fon_count = (prolog_fon_count + 1) % (len(prolog_fons) * 5)
+
+        if ded.rect.x >= 440:
+            print_text2 = True
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                break
+
+        if not is_intersection(ded, prolog_plates)[0]:
+            ded.rect.y += 10
+
+        if ded.rect.y > 10000:
+            sound_fail.play()
+            run = False
+
+        check_move(True)
+
+        groupDED.update()
+        groupDED.draw(screen)
+        prolog_plates.draw(screen)
+
+        screen.blit(text1, (100, 250))
+        screen.blit(text2, (135, 275))
+        screen.blit(text3, (155, 300))
+        screen.blit(text4, (135, 325))
+
+        if print_text2:
+            screen.blit(text5, (450, 250))
+            screen.blit(text6, (450, 300))
+            screen.blit(text7, (550, 370))
+
+        clock.tick(60)
+        pygame.display.flip()
+
+    text5_font = pygame.font.Font(None, 80)
+    text5 = text5_font.render(f"Прошло 5 часов...", True, (0, 0, 128))
+    count = 0
+    zvon.play()
+    while count < 26000:
+        screen.fill((255, 255, 255))
+        if count > 10850:
+            screen.blit(text5, (250, 200))
+        count += 1
+
+        pygame.display.flip()
+    ded.kill()
+
+
 if __name__ == '__main__':
     screen.fill((255, 255, 255))
 
@@ -655,6 +752,8 @@ if __name__ == '__main__':
 
     # Звуки
     get_gift = pygame.mixer.Sound(os.path.join('data', 'get_gift.mp3'))
+    sound_fail = pygame.mixer.Sound(os.path.join('data', 'fail.mp3'))
+    zvon = pygame.mixer.Sound(os.path.join('data', 'zvon.mp3'))
 
     # Создание групп
     all_sprites = pygame.sprite.Group()
@@ -697,10 +796,11 @@ if __name__ == '__main__':
     ded = DedMoroz(10, 410)
 
     # Растягивание картинки платформы до нужной длины и её создание
-    image = pygame.transform.scale(plate2_image, (1010, 40))
-    Plate(0, 570, image, plates_level_1)
-    Plate(0, 570, image, plates_level_2)
-    Plate(0, 570, image, plates_level_3)
+    big_plate = pygame.transform.scale(plate2_image, (1010, 40))
+    prolog_plate = pygame.transform.scale(plate2_image, (600, 40))
+    Plate(0, 570, big_plate, plates_level_1)
+    Plate(0, 570, big_plate, plates_level_2)
+    Plate(0, 570, big_plate, plates_level_3)
     plate_image = pygame.transform.scale(plate1_image, (200, 35))
 
     # Уровень 1
@@ -753,6 +853,21 @@ if __name__ == '__main__':
     left_move, right_move, move = False, False, False
     kol_gifts = 0
 
+    # Пролог
+    prolog_plates = pygame.sprite.Group()
+    prolog_fons = fon_level_2
+    prolog_fon_count = 1
+    prolog_fon_image = prolog_fons[prolog_fon_count]
+    ded.step = 2
+
+    Plate(0, 570, prolog_plate, prolog_plates)
+    Plate(800, 570, prolog_plate, prolog_plates)
+
+    prolog()
+
+    ded = DedMoroz(10, 410)
+    ded.step = 5
+    # Основная игра
     running = True
     while running:
         screen.blit(fon_image, (0, 0))
@@ -765,20 +880,7 @@ if __name__ == '__main__':
                 running = False
 
         keys = pygame.key.get_pressed()
-
-        # Передвижение деда
-        if keys[pygame.K_LEFT] or keys[pygame.K_a]:
-            left_move = True
-            right_move = False
-            ded.get_images(images_ded_move_left)
-        elif keys[pygame.K_RIGHT] or keys[pygame.K_d]:
-            left_move = False
-            right_move = True
-            ded.get_images(images_ded_move_right)
-        else:
-            left_move = False
-            right_move = False
-            ded.get_images(images_ded_AFK)
+        check_move()
 
         # Переход на соседние карты
         if ded.rect.x > 895:
@@ -797,11 +899,6 @@ if __name__ == '__main__':
                 left_move = False
         if ded.rect.y > 880:
             ded.rect.y -= 30
-
-        # Прыжок
-        if not ded.jump:
-            if keys[pygame.K_UP] or keys[pygame.K_w]:
-                ded.get_jump()
 
         # Взаимодействие с персонажами
         if is_intersection(ded, groups_perses[level_count - 1])[1]:
@@ -823,7 +920,6 @@ if __name__ == '__main__':
                     gift.destroy()
             text = font.render(f"Подарков собрано: {kol_gifts}", True, (255, 20, 147))
             screen.blit(text, (350, 25))
-
 
         all_sprites.update()
         groupDED.draw(screen)
