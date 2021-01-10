@@ -446,6 +446,14 @@ def gifts():
 
 # ----------------------------------------------------------------------------------------------------------------------
 
+# ------------------------------------------- Аракноид -----------------------------------------------------------------
+pers5_dialog = []
+for i in range(9):
+    pers5_dialog.append(load_image(os.path.join('pers5', f"{i + 1}.png")))
+pers5_win_image = load_image(os.path.join('pers5', 'win.png'))
+pers5_lose_image = load_image(os.path.join('pers5', 'lose.png'))
+pers5_return_game = load_image(os.path.join('pers5', 'return.png'))
+# ----------------------------------------------------------------------------------------------------------------------
 # Выводится одна картинка до нажатия
 def one_image(image):
     flag = True
@@ -783,6 +791,7 @@ if __name__ == '__main__':
     for i in range(1, 35):
         images_ded_AFK.append(load_image(f"ded{i}.png"))
 
+    # Анимация деда при движении
     images_ded_move_right = [load_image(os.path.join('movement', 'ded1.png')),
                              load_image(os.path.join('movement', 'ded2.png')),
                              load_image(os.path.join('movement', 'ded3.png')),
@@ -801,6 +810,7 @@ if __name__ == '__main__':
     Plate(0, 570, big_plate, plates_level_1)
     Plate(0, 570, big_plate, plates_level_2)
     Plate(0, 570, big_plate, plates_level_3)
+    Plate(0, 570, big_plate, plates_level_4)
     plate_image = pygame.transform.scale(plate1_image, (200, 35))
 
     # Уровень 1
@@ -828,10 +838,18 @@ if __name__ == '__main__':
     Plate(600, 250, plate_image, plates_level_3)
     pers4 = Pers(600, 140, pers4_dialog, pers4_win_image, None, None, gifts, perses_level_3)
 
+    # Уровень 4
+    Plate(50, 500, plate_image, plates_level_4)
+    Plate(200, 400, plate_image, plates_level_4)
+    Plate(50, 250, plate_image, plates_level_4)
+    Plate(500, 200, plate_image, plates_level_4)
+    Plate(450, 200, plate_image, plates_level_4)
+    Plate(630, 150, plate_image, plates_level_4)
+    Pers(630, 40, pers5_dialog, pers5_win_image, pers5_lose_image, pers5_return_game, snake, perses_level_4)
 
     clock = pygame.time.Clock()
 
-    # Фоныe
+    # Фоны
     fon_level_1 = []
     for i in range(150):
         image = load_image(os.path.join('background', os.path.join('level1', f'fon{i + 1}.png')))
@@ -840,14 +858,15 @@ if __name__ == '__main__':
     for i in range(52):
         image = load_image(os.path.join('background', os.path.join('level2', f'fon{i + 1}.png')))
         fon_level_2.append(pygame.transform.scale(image, (1000, 600)))
+    house_image = load_image(os.path.join('background', 'house.png'))
 
     # Группы для смены локаций
-    groups_perses = [perses_level_1, perses_level_2, perses_level_3]
-    groups_plates = [plates_level_1, plates_level_2, plates_level_3]
-    groups_gifts = [gifts_level_1, gifts_level_2, gifts_level_3]
-    fons = [fon_level_1]
+    groups_perses = [perses_level_1, perses_level_2, perses_level_3, perses_level_4]
+    groups_plates = [plates_level_1, plates_level_2, plates_level_3, plates_level_4]
+    groups_gifts = [gifts_level_1, gifts_level_2, gifts_level_3, gifts_level_4]
+    fons = [fon_level_1, fon_level_1, fon_level_1, fon_level_1]
     fon_count = 1
-    level_count = 1
+    level_count = 4
     fon_image = fons[level_count - 1][fon_count - 1]
 
     left_move, right_move, move = False, False, False
@@ -863,17 +882,21 @@ if __name__ == '__main__':
     Plate(0, 570, prolog_plate, prolog_plates)
     Plate(800, 570, prolog_plate, prolog_plates)
 
-    prolog()
+    #prolog()
 
     ded = DedMoroz(10, 410)
     ded.step = 5
     # Основная игра
+    screen.blit(fon_image, (0, 0))
+    one_image(load_image('ded_replic1.png'))
     running = True
     while running:
         screen.blit(fon_image, (0, 0))
         if fon_count % 5 == 0:
             fon_image = fons[level_count - 1][(fon_count // 5) - 1]
         fon_count = (fon_count + 1) % (len(fons[level_count - 1]) * 5)
+        if level_count == 4:
+            screen.blit(house_image, (400, 170))
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -911,6 +934,7 @@ if __name__ == '__main__':
         if ded.collect_gifts:
             if kol_gifts == 30:
                 ded.collect_gifts = False
+                fons.append(fon_level_1)
 
             if is_intersection(ded, groups_gifts[level_count - 1])[1]:
                 gift = pygame.sprite.spritecollideany(ded, groups_gifts[level_count - 1])
