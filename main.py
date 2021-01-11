@@ -161,7 +161,7 @@ get_tree = pygame.mixer.Sound(os.path.join('data', 'get_tree.mp3'))
 get_stone = pygame.mixer.Sound(os.path.join('data', 'get_stone.mp3'))
 all_sprites = pygame.sprite.Group()
 board = pygame.sprite.Sprite()
-group_balls = pygame.sprite.Group()
+group_things = pygame.sprite.Group()
 group_bombs = pygame.sprite.Group()
 group_board = pygame.sprite.Group()
 clock = pygame.time.Clock()
@@ -172,9 +172,9 @@ total_count = 0
 life = [1, 2, 3]
 
 
-class Ball(pygame.sprite.Sprite):
+class Thing(pygame.sprite.Sprite):
     def __init__(self, x, y, image):
-        super().__init__(group_balls, all_sprites)
+        super().__init__(group_things, all_sprites)
         self.image = image
         self.rect = self.image.get_rect()
         self.x = x
@@ -228,7 +228,7 @@ class Bar(pygame.sprite.Sprite):
         self.rect = pygame.Rect(self.x - 30, self.y, self.w, self.h)
 
 
-def collision(bar):
+def collision_falling(bar):
     global loosing_count, things_list, bombs, total_count, life
     for n, thing in enumerate(things_list):
         if thing.rect.colliderect(bar):
@@ -270,7 +270,10 @@ def falling_things():
     for i in range(count_things):
         x = random.randrange(0, width - 5)
         y = random.randrange(-350, 300)
-        things_list.append(Ball(x, y, image_things))
+        print(x)
+        print(y)
+        print(image_things)
+        things_list.append(Thing(x, y, image_things))
         if i % 5 == 0:
             bombs.append(Bomb(random.randrange(0, width - 5), random.randrange(-350, 300), image_bomb))
 
@@ -302,7 +305,7 @@ def falling_things():
             break
 
         for i in range(len(things_list)):
-            Ball.update(things_list[i])
+            Thing.update(things_list[i])
 
         for i in range(len(bombs)):
             Bomb.update(bombs[i])
@@ -313,11 +316,11 @@ def falling_things():
             loosing_count = 0
 
         bar.update()
-        group_balls.draw(screen)
+        group_things.draw(screen)
         group_bombs.draw(screen)
         group_board.draw(screen)
 
-        collision(bar)
+        collision_falling(bar)
         for i in life:
             life_rect = image_life.get_rect(center=((25 * i) - 10, 15))
             screen.blit(image_life, life_rect)
@@ -352,10 +355,10 @@ def falling_things():
 pygame.init()
 size = width, height = 1000, 600
 screen = pygame.display.set_mode(size)
-get_bricks = pygame.mixer.Sound(os.path.join('data', 'bricks.mp3'))
+'''get_bricks = pygame.mixer.Sound(os.path.join('data', 'bricks.mp3'))'''
 get_ball_jump = pygame.mixer.Sound(os.path.join('data', 'lol.mp3'))
-total = 0
-text = pygame.font.SysFont('Times New Roman', 24)
+total_arkanoid = 0
+text_arkanoid = pygame.font.SysFont('Times New Roman', 24)
 speed = 2
 clock = pygame.time.Clock()
 all_sprites_arkanoid = pygame.sprite.Group()
@@ -420,7 +423,7 @@ ball = Ball(width // 2, height // 2)
 
 
 def collision():
-    global total, bricks, error_game
+    global total_arkanoid, bricks, error_game
     if ball.rect.colliderect(bar):
         get_ball_jump.play()
         ball.ball_y = "up"
@@ -444,10 +447,10 @@ def collision():
                         ball.ball_x = "right"
                     else:
                         ball.ball_x = "left"
-            get_bricks.play()
+            '''get_bricks.play()'''
             bricks.pop(n)
             brick.kill()
-            total += 1
+            total_arkanoid += 1
 
     if ball.y > 570:
         error_game = True
@@ -483,7 +486,7 @@ def show_bricks():
 
 
 def arkanoid():
-    global bricks, error_game, total
+    global bricks, error_game, total_arkanoid
     pygame.display.set_caption("Арканойд")
     first_briks = create_bricks()
     len_first_briks = len(first_briks)
@@ -512,14 +515,14 @@ def arkanoid():
         ball.update()
         bar.update()
         collision()
-        screen_total = text.render(f'Счет: {total}', 0, (255, 255, 255))
-        screen.blit(screen_total, (width // 2 - 50, height - 30))
+        screen_total_arkanoid = text_arkanoid.render(f'Счет: {total_arkanoid}', 0, (255, 255, 255))
+        screen.blit(screen_total_arkanoid, (width // 2 - 50, height - 30))
         show_bricks()
         pygame.display.update()
 
         clock.tick(120)
         if error_game:
-            total = 0
+            total_arkanoid = 0
             bar.kill()
             ball.x = width // 2
             ball.y = height // 2
@@ -537,10 +540,10 @@ def arkanoid():
                 i.kill()
             print(all_sprites_arkanoid)
             return False
-        if total == len_first_briks:
+        if total_arkanoid == len_first_briks:
             bar.kill()
             ball.kill()
-            print(total)
+            print(total_arkanoid)
             print(bricks)
             for n, brick in enumerate(bricks):
                 brick.kill()
@@ -1071,11 +1074,10 @@ if __name__ == '__main__':
     groups_perses = [perses_level_1, perses_level_2, perses_level_3, perses_level_4]
     groups_plates = [plates_level_1, plates_level_2, plates_level_3, plates_level_4]
     groups_gifts = [gifts_level_1, gifts_level_2, gifts_level_3, gifts_level_4]
-    fons = [fon_level_1, fon_level_1, fon_level_1, fon_level_1]
+    fons = [fon_level_1]
     fon_count = 1
-    level_count = 4
+    level_count = 1
     fon_image = fons[level_count - 1][fon_count - 1]
-
     left_move, right_move, move = False, False, False
     kol_gifts = 0
 
@@ -1089,7 +1091,7 @@ if __name__ == '__main__':
     Plate(0, 570, prolog_plate, prolog_plates)
     Plate(800, 570, prolog_plate, prolog_plates)
 
-    # prolog()
+    prolog()
 
     ded = DedMoroz(10, 410)
     ded.step = 5
