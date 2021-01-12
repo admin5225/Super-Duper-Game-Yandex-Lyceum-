@@ -26,6 +26,10 @@ def load_image(name, colorkey=None):
     return image
 
 
+image_ico = load_image('ico.png')
+pygame.display.set_icon(image_ico)
+
+
 def final_game():
     k = 0
     text_final = pygame.font.SysFont('Times New Roman', 36)
