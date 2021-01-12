@@ -355,7 +355,7 @@ def falling_things():
 pygame.init()
 size = width, height = 1000, 600
 screen = pygame.display.set_mode(size)
-'''get_bricks = pygame.mixer.Sound(os.path.join('data', 'bricks.mp3'))'''
+get_bricks = pygame.mixer.Sound(os.path.join('data', 'bricks.mp3'))
 get_ball_jump = pygame.mixer.Sound(os.path.join('data', 'lol.mp3'))
 total_arkanoid = 0
 text_arkanoid = pygame.font.SysFont('Times New Roman', 24)
@@ -447,7 +447,7 @@ def collision():
                         ball.ball_x = "right"
                     else:
                         ball.ball_x = "left"
-            '''get_bricks.play()'''
+            get_bricks.play()
             bricks.pop(n)
             brick.kill()
             total_arkanoid += 1
@@ -920,7 +920,7 @@ def prolog():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
-                break
+                sys.exit()
 
         if not is_intersection(ded, prolog_plates)[0]:
             ded.rect.y += 10
