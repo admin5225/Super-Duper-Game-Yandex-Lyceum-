@@ -1168,6 +1168,10 @@ if __name__ == '__main__':
         if ded.rect.y > 880:
             ded.rect.y -= 30
 
+        # Если провалился
+        if ded.rect.y > 570:
+            ded.rect.y = 410
+
         # Взаимодействие с персонажами
         if is_intersection(ded, groups_perses[level_count - 1])[1]:
             if keys[pygame.K_e]:
