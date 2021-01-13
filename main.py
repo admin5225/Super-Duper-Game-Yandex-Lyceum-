@@ -36,10 +36,18 @@ def final_game():
     pygame.display.set_caption('Подвиги Деда Мороза')
     fon_final = load_image('final_fon.jpg')
     screen.blit(fon_final, (0, 0))
-    final_dialog = [load_image(os.path.join('pers1', '1.png')), load_image(os.path.join('pers1', '2.png')),
-                    load_image(os.path.join('pers1', '3.png')), load_image(os.path.join('pers1', '4.png')),
-                    load_image(os.path.join('pers1', '5.png')), load_image(os.path.join('pers1', '6.png')),
-                    load_image(os.path.join('pers1', '7.png')), load_image(os.path.join('pers1', '8.png'))]
+    image_win = load_image(os.path.join('pers5', 'win.png'))
+    screen.blit(image_win, (0, 300))
+    final_dialog = [load_image(os.path.join('final_dialog', '1.png')),
+                    load_image(os.path.join('final_dialog', '2.png')),
+                    load_image(os.path.join('final_dialog', '3.png')),
+                    load_image(os.path.join('final_dialog', '4.png')),
+                    load_image(os.path.join('final_dialog', '5.png')),
+                    load_image(os.path.join('final_dialog', '6.png')),
+                    load_image(os.path.join('final_dialog', '7.png')),
+                    load_image(os.path.join('final_dialog', '8.png')),
+                    load_image(os.path.join('final_dialog', '9.png'))]
+    k = len(final_dialog) + 1
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -47,7 +55,10 @@ def final_game():
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_e:
-                    if k != len(final_dialog):
+                    if k == len(final_dialog) + 1:
+                        screen.blit(fon_final, (0, 0))
+                        k = 0
+                    elif k != len(final_dialog):
                         screen.blit(final_dialog[k], (0, 300))
                         k += 1
                 if event.key == pygame.K_q:
@@ -221,7 +232,7 @@ class Thing(pygame.sprite.Sprite):
         self.y += 1
         if self.y > height - 50:
             loosing_count += 1
-            print(loosing_count)
+            '''print(loosing_count)'''
             self.y = random.randrange(-50, -10)
             self.x = random.randrange(0, width - 5)
         self.rect = pygame.Rect(self.x, self.y, 10, 10)
@@ -269,7 +280,7 @@ def collision_falling(bar):
             things_list[n].kill()
             things_list.pop(n)
             get_tree.play()
-            print(len(things_list))
+            '''print(len(things_list))'''
     for n, bomb in enumerate(bombs):
         if bomb.rect.colliderect(bar):
             bombs[n].kill()
@@ -303,9 +314,9 @@ def falling_things():
     for i in range(count_things):
         x = random.randrange(0, width - 5)
         y = random.randrange(-350, 300)
-        print(x)
+        '''print(x)
         print(y)
-        print(image_things)
+        print(image_things)'''
         things_list.append(Thing(x, y, image_things))
         if i % 5 == 0:
             bombs.append(Bomb(random.randrange(0, width - 5), random.randrange(-350, 300), image_bomb))
@@ -509,7 +520,7 @@ def create_bricks():
             if w == n:
                 w = 0
                 h += 30
-    print(len(bricks))
+    '''print(len(bricks))'''
     return bricks
 
 
@@ -538,6 +549,8 @@ def arkanoid():
         elif keys[pygame.K_RIGHT] or keys[pygame.K_d]:
             left_move = False
             right_move = True
+        elif keys[pygame.K_z]:
+            total_arkanoid = len_first_briks
         else:
             left_move = False
             right_move = False
@@ -555,8 +568,7 @@ def arkanoid():
 
         clock.tick(120)
         if error_game:
-            total_arkanoid = len_first_briks
-            '''total_arkanoid = 0
+            total_arkanoid = 0
             bar.kill()
             ball.x = width // 2
             ball.y = height // 2
@@ -568,16 +580,16 @@ def arkanoid():
             for n, brick in enumerate(first_briks):
                 brick.kill()
                 bricks.pop(n)
-            print(all_sprites_arkanoid)
+            '''print(all_sprites_arkanoid)'''
             for i in all_sprites_arkanoid:
                 i.kill()
-            print(all_sprites_arkanoid)
-            return False'''
+            '''print(all_sprites_arkanoid)'''
+            return False
         if total_arkanoid == len_first_briks:
             bar.kill()
             ball.kill()
-            print(total_arkanoid)
-            print(bricks)
+            '''print(total_arkanoid)
+            print(bricks)'''
             for n, brick in enumerate(bricks):
                 brick.kill()
                 bricks.pop(n)
@@ -1077,7 +1089,6 @@ if __name__ == '__main__':
     Pers(150, 459, pers2_dialog, pers2_win_image, pers2_lose_image, pers2_return_game, falling_things, perses_level_2)
 
     # Уровень 3
-    Plate(0, 280, plate_image, plates_level_3)
     Plate(200, 250, plate_image, plates_level_3)
     Plate(400, 280, plate_image, plates_level_3)
     Plate(600, 250, plate_image, plates_level_3)
@@ -1109,10 +1120,10 @@ if __name__ == '__main__':
     groups_perses = [perses_level_1, perses_level_2, perses_level_3, perses_level_4]
     groups_plates = [plates_level_1, plates_level_2, plates_level_3, plates_level_4]
     groups_gifts = [gifts_level_1, gifts_level_2, gifts_level_3, gifts_level_4]
-    '''fons = [fon_level_1]'''
-    fons = [fon_level_1, fon_level_1, fon_level_1, fon_level_1]
-    fon_count = 1
-    level_count = 4
+    fons = [fon_level_1]
+    '''fons = [fon_level_1, fon_level_1, fon_level_1, fon_level_1]'''
+    fon_count = 4
+    level_count = 1
     fon_image = fons[level_count - 1][fon_count - 1]
     left_move, right_move, move = False, False, False
     kol_gifts = 0
@@ -1127,7 +1138,7 @@ if __name__ == '__main__':
     Plate(0, 570, prolog_plate, prolog_plates)
     Plate(800, 570, prolog_plate, prolog_plates)
 
-    # prolog()
+    prolog()
 
     ded = DedMoroz(10, 410)
     ded.step = 5
