@@ -26,6 +26,39 @@ def load_image(name, colorkey=None):
     return image
 
 
+image_ico = load_image('ico.png')
+pygame.display.set_icon(image_ico)
+
+
+def final_game():
+    k = 0
+    text_final = pygame.font.SysFont('Times New Roman', 36)
+    pygame.display.set_caption('Подвиги Деда Мороза')
+    fon_final = load_image('final_fon.jpg')
+    screen.blit(fon_final, (0, 0))
+    final_dialog = [load_image(os.path.join('pers1', '1.png')), load_image(os.path.join('pers1', '2.png')),
+                    load_image(os.path.join('pers1', '3.png')), load_image(os.path.join('pers1', '4.png')),
+                    load_image(os.path.join('pers1', '5.png')), load_image(os.path.join('pers1', '6.png')),
+                    load_image(os.path.join('pers1', '7.png')), load_image(os.path.join('pers1', '8.png'))]
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_e:
+                    if k != len(final_dialog):
+                        screen.blit(final_dialog[k], (0, 300))
+                        k += 1
+                if event.key == pygame.K_q:
+                    screen.fill((0, 0, 0))
+                    text_for_final = text_final.render(f'Спасибо за игру!', 0, (255, 255, 255))
+                    screen.blit(text_for_final, (width // 2 - 120, height // 2))
+
+        pygame.display.flip()
+        clock.tick(60)
+
+
 # ------------------------------- Змейка -------------------------------------------------------------------------------
 snake_color = (195, 200, 150)
 screen_color = (0, 102, 2)
@@ -522,7 +555,8 @@ def arkanoid():
 
         clock.tick(120)
         if error_game:
-            total_arkanoid = 0
+            total_arkanoid = len_first_briks
+            '''total_arkanoid = 0
             bar.kill()
             ball.x = width // 2
             ball.y = height // 2
@@ -534,12 +568,11 @@ def arkanoid():
             for n, brick in enumerate(first_briks):
                 brick.kill()
                 bricks.pop(n)
-            '''first_briks = create_bricks()'''
             print(all_sprites_arkanoid)
             for i in all_sprites_arkanoid:
                 i.kill()
             print(all_sprites_arkanoid)
-            return False
+            return False'''
         if total_arkanoid == len_first_briks:
             bar.kill()
             ball.kill()
@@ -553,7 +586,9 @@ def arkanoid():
                 bricks.pop(n)
             for i in all_sprites_arkanoid:
                 i.kill()
+                final_game()
             return True
+
     pygame.quit()
 
 
@@ -1074,9 +1109,10 @@ if __name__ == '__main__':
     groups_perses = [perses_level_1, perses_level_2, perses_level_3, perses_level_4]
     groups_plates = [plates_level_1, plates_level_2, plates_level_3, plates_level_4]
     groups_gifts = [gifts_level_1, gifts_level_2, gifts_level_3, gifts_level_4]
-    fons = [fon_level_1]
+    '''fons = [fon_level_1]'''
+    fons = [fon_level_1, fon_level_1, fon_level_1, fon_level_1]
     fon_count = 1
-    level_count = 1
+    level_count = 4
     fon_image = fons[level_count - 1][fon_count - 1]
     left_move, right_move, move = False, False, False
     kol_gifts = 0
@@ -1091,7 +1127,7 @@ if __name__ == '__main__':
     Plate(0, 570, prolog_plate, prolog_plates)
     Plate(800, 570, prolog_plate, prolog_plates)
 
-    prolog()
+    # prolog()
 
     ded = DedMoroz(10, 410)
     ded.step = 5
