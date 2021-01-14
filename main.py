@@ -406,6 +406,7 @@ text_arkanoid = pygame.font.SysFont('Times New Roman', 24)
 speed = 2
 clock = pygame.time.Clock()
 all_sprites_arkanoid = pygame.sprite.Group()
+bricks_sprite = pygame.sprite.Group()
 background = load_image('fon_truba.jpg')
 error_game = False
 bricks = []
@@ -413,7 +414,7 @@ bricks = []
 
 class Brick(pygame.sprite.Sprite):
     def __init__(self, x, y):
-        super().__init__(all_sprites_arkanoid)
+        super().__init__(bricks_sprite)
         self.x = x
         self.y = y
         self.rect = pygame.Rect(self.x, self.y, 60, 15)
@@ -506,8 +507,8 @@ def create_bricks():
     bricks = []
     h = 30
     w = 0
-    n = 15
-    for i in range(1, n * 8):
+    n = 14
+    for i in range(1, n * 7):
         if i % n == 0:
             level += '\t'
         level += str(random.randint(0, 1))
@@ -561,6 +562,7 @@ def arkanoid():
         ball.update()
         bar.update()
         collision()
+        '''print(len(bricks_sprite))'''
         screen_total_arkanoid = text_arkanoid.render(f'Счет: {total_arkanoid}', 0, (255, 255, 255))
         screen.blit(screen_total_arkanoid, (width // 2 - 50, height - 30))
         show_bricks()
@@ -583,9 +585,11 @@ def arkanoid():
             '''print(all_sprites_arkanoid)'''
             for i in all_sprites_arkanoid:
                 i.kill()
+            for i in bricks_sprite:
+                i.kill()
             '''print(all_sprites_arkanoid)'''
             return False
-        if total_arkanoid == len_first_briks:
+        if total_arkanoid == len_first_briks or len(bricks_sprite) == 0:
             bar.kill()
             ball.kill()
             '''print(total_arkanoid)
@@ -598,7 +602,9 @@ def arkanoid():
                 bricks.pop(n)
             for i in all_sprites_arkanoid:
                 i.kill()
-                final_game()
+            for i in bricks_sprite:
+                i.kill()
+            final_game()
             return True
 
     pygame.quit()
